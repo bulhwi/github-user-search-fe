@@ -343,6 +343,52 @@ used_prompts.md에 지금까지의 프롬프트들 자동으로 계속 적립해
 
 ---
 
+### 프롬프트 13: Feature #1 작업 시작 (핵심 인프라 구축)
+**사용한 도구**: Claude Code
+
+**프롬프트**:
+```
+좋아, Feature #1 부터 작업 진행해 보자.
+```
+
+**결과**:
+- 📋 **작업 계획 수립**
+  - TodoWrite로 8개 작업 항목 정의
+  - Redux Store, 타입 정의, Query Builder, Slices, UI 컴포넌트 순서 계획
+
+- 🏗️ **TypeScript 타입 정의 (src/types/)**
+  - types/github.ts: GitHub API 응답 타입 (GitHubSearchResponse, GitHubUser, RateLimit)
+  - types/search.ts: 검색 필터 타입 (8가지 기능 모두 지원)
+  - types/ui.ts: UI 상태 타입 (LoadingState, ThemeMode, Toast)
+  - types/index.ts: 중앙 집중식 export
+
+- 🔧 **검색 쿼리 빌더 (src/utils/queryBuilder.ts)**
+  - SearchQueryBuilder 클래스 (메서드 체이닝 패턴)
+  - Feature #1-#8 모든 검색 qualifier 메서드 구현
+  - buildSearchQuery 헬퍼 함수
+
+- ✅ **테스트 코드 (src/utils/queryBuilder.test.ts)**
+  - 29개 테스트 케이스 작성
+  - 모든 테스트 통과 ✓ (0.36s)
+
+- 🗄️ **Redux Store 구조 (src/store/)**
+  - store/index.ts, store/hooks.ts
+  - store/slices/searchSlice.ts: searchUsers AsyncThunk, 검색 상태 관리
+  - store/slices/uiSlice.ts: UI 상태 관리 (테마, Rate Limit, Toast)
+
+- 🌐 **GitHub API Server Route (src/app/api/search/route.ts)**
+  - Authorization token 처리
+  - Rate limit 핸들링 (X-RateLimit-* 헤더)
+  - 에러 처리 (400, 403, 429, 500)
+
+- 📝 **.env.example 생성**
+
+- 🚀 **Git 커밋 및 푸시**
+  - 커밋: 2c53525 "feat: implement core Redux architecture and API infrastructure"
+  - 12개 파일 변경 (864 insertions)
+
+---
+
 ## 작성 가이드
 
 각 프롬프트 기록은 다음 형식을 따라 작성합니다:
