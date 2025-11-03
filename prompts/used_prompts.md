@@ -171,6 +171,27 @@ UI 디자인 패턴은 아토믹 패턴 상태관리는 react query와 context a
 
 ---
 
+### 프롬프트 8: Axios 제거, Native Fetch API 사용
+**사용한 도구**: Claude Code
+
+**프롬프트**:
+```
+다 좋은데, axios는 쓰지말자, javascript fetch api로도 충분해.
+axios 제거해
+```
+
+**결과**:
+- package.json에서 axios 제거 완료
+- pnpm install 실행 (axios 1.13.1 제거됨)
+- docs/PRD.md 업데이트
+  - HTTP Client: Axios → Native Fetch API로 변경
+- docs/TECHNICAL_SPECIFICATION.md 업데이트
+  - HTTP Client: Axios → Fetch API (Native)로 변경
+  - 버전 이력 추가: v2.1.0 (HTTP Client 변경)
+- 아키텍처 방향: 외부 라이브러리 최소화, 브라우저 네이티브 API 활용
+
+---
+
 ## 작성 가이드
 
 각 프롬프트 기록은 다음 형식을 따라 작성합니다:

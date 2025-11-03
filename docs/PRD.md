@@ -33,7 +33,7 @@ GitHub REST API를 활용하여 사용자를 검색하고, 다양한 필터 조�
 - **UI Library**: Material-UI (MUI) v6
 - **Styling**: Tailwind CSS v3
 - **State Management**: React Query + Context API
-- **HTTP Client**: Axios
+- **HTTP Client**: Native Fetch API
 - **Design Pattern**: Atomic Design
 
 ### 2.2 Testing

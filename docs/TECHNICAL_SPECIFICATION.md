@@ -11,7 +11,7 @@
 > 아키텍처가 다음과 같이 변경되었습니다:
 > - **상태 관리**: ~~Redux Toolkit~~ → **React Query + Context API**
 > - **디자인 패턴**: ~~Clean Architecture~~ → **Atomic Design Pattern**
-> - **HTTP Client**: **Axios** 추가
+> - **HTTP Client**: Native Fetch API 사용
 >
 > 이 문서는 새로운 아키텍처 기준으로 업데이트되었습니다.
 
@@ -67,7 +67,7 @@ GitHub REST API를 활용한 사용자 검색 웹 애플리케이션의 기술 �
 | @tanstack/react-query | 5.90.6 | Server State Management & Caching |
 | @tanstack/react-query-devtools | 5.90.2 | React Query DevTools |
 | React Context API | Built-in | Client State Management |
-| Axios | 1.13.1 | HTTP Client |
+| Fetch API | Native | HTTP Client |
 
 ### 2.3 UI/Styling
 
@@ -1457,7 +1457,8 @@ NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
 | 버전 | 날짜 | 작성자 | 변경 내용 |
 |------|------|--------|-----------|
 | 1.0.0 | 2025-11-03 | Claude Code | 초기 작성 |
-| 2.0.0 | 2025-11-03 | Claude Code | 아키텍처 대규모 변경: Redux Toolkit → React Query + Context API, Clean Architecture → Atomic Design Pattern, Axios 추가 |
+| 2.0.0 | 2025-11-03 | Claude Code | 아키텍처 대규모 변경: Redux Toolkit → React Query + Context API, Clean Architecture → Atomic Design Pattern |
+| 2.1.0 | 2025-11-03 | Claude Code | HTTP Client 변경: Axios 제거, Native Fetch API 사용 |
 
 ---
 
