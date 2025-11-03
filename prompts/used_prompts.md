@@ -389,6 +389,64 @@ used_prompts.md에 지금까지의 프롬프트들 자동으로 계속 적립해
 
 ---
 
+### 프롬프트 14: Feature #1 UI 컴포넌트 구현 (Atomic Design)
+**사용한 도구**: Claude Code
+
+**프롬프트**:
+```
+오케이 순서데로 진행하면서 Feature #1의 이슈 내부 태스크들도 업데이트 하면서 진행해보자
+```
+
+**결과**:
+- 📋 **GitHub Issue #1 확인 및 진행 상황 추적**
+  - gh issue view 1로 세부 태스크 확인
+  - 완료된 태스크 (1-2) GitHub에 코멘트 작성
+  - 진행 중인 태스크 실시간 업데이트
+
+- 🏗️ **Atomic Design 디렉토리 구조 생성**
+  - src/components/atoms/
+  - src/components/molecules/
+  - src/components/organisms/
+  - src/components/templates/
+
+- ⚛️ **Atoms: Select 컴포넌트 (src/components/atoms/Select/)**
+  - Select.tsx: 재사용 가능한 기본 Select 컴포넌트
+    - Generic 타입 지원 `<T extends string>`
+    - MUI FormControl, InputLabel, Select, MenuItem 통합
+    - SelectOption<T> 인터페이스 정의
+    - Props: id, label, value, options, onChange, helperText, error, disabled, fullWidth, required, className
+  - index.ts: 타입 및 컴포넌트 export
+
+- 🧩 **Molecules: TypeFilter 컴포넌트 (src/components/molecules/TypeFilter/)**
+  - TypeFilter.tsx: 타입 필터 UI 컴포넌트
+    - AccountType | null 지원
+    - 3가지 옵션: All (null), Users (user), Organizations (org)
+    - Select 컴포넌트 재사용 (Atomic Design 패턴)
+    - Helper text: "Filter by user or organization"
+  - TypeFilter.test.tsx: 컴포넌트 테스트
+    - 8개 테스트 케이스 작성
+    - 렌더링 테스트 (기본값, user, org)
+    - 상호작용 테스트 (onChange 콜백)
+    - Props 테스트 (helperText, className)
+  - index.ts: 타입 및 컴포넌트 export
+
+- ✅ **테스트 실행 결과**
+  - `pnpm test -- TypeFilter.test.tsx`
+  - 8/8 테스트 통과 ✓ (1.248s)
+  - User interaction 테스트 (userEvent.click, userEvent.select)
+  - 모든 시나리오 커버
+
+- 🚀 **Git 커밋 및 푸시**
+  - 커밋: 57efd2a "feat(Feature #1): implement TypeFilter component with Atomic Design"
+  - 5개 파일 추가 (219 insertions)
+
+- 📝 **GitHub Issue #1 업데이트**
+  - 태스크 3 완료 표시 (UI 컴포넌트)
+  - 테스트 결과 공유
+  - 남은 태스크 명시 (Redux 통합, E2E 테스트)
+
+---
+
 ## 작성 가이드
 
 각 프롬프트 기록은 다음 형식을 따라 작성합니다:
