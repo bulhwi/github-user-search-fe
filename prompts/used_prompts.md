@@ -447,6 +447,114 @@ used_prompts.md에 지금까지의 프롬프트들 자동으로 계속 적립해
 
 ---
 
+### 프롬프트 15: Feature #1 완전 통합 (Organisms + Redux 통합 + Build)
+**사용한 도구**: Claude Code
+
+**프롬프트**:
+```
+Feature #1 을 완전히 끝내보자
+```
+
+**결과**:
+- 🏗️ **Organisms 컴포넌트 생성**
+  - **SearchBar** (src/components/organisms/SearchBar/)
+    - 검색 입력 + 제출 버튼
+    - Props: onSearch, initialValue, placeholder
+    - MUI TextField + SearchIcon + Button
+    - Enter 키 제출 지원
+
+  - **FilterPanel** (src/components/organisms/FilterPanel/)
+    - TypeFilter를 포함하는 컨테이너
+    - MUI Paper + Typography
+    - Features #2-#8을 위한 확장 가능 구조
+    - Props: type, onTypeChange
+
+  - **UserCard** (src/components/organisms/UserCard/)
+    - 개별 사용자 정보 카드
+    - Avatar (64x64), name, login, bio (2줄 ellipsis)
+    - Location + Company (아이콘 + 텍스트)
+    - Followers, Public Repos 통계
+    - Type Chip (User: primary, Organization: secondary)
+    - GitHub 프로필 링크 (새 탭)
+
+  - **UserList** (src/components/organisms/UserList/)
+    - 사용자 카드 그리드 (Grid container, spacing: 3)
+    - 반응형 레이아웃 (xs=12, sm=6, md=4, lg=3)
+    - Loading 상태: CircularProgress (중앙 정렬)
+    - Error 상태: Error 메시지 표시
+    - Empty 상태: "No results found" + 안내 메시지
+    - "Found N users" 카운트
+
+- 🔗 **page.tsx Redux 통합**
+  - 'use client' 전환 (CSR)
+  - Redux hooks: useAppDispatch, useAppSelector
+  - 상태 구독: query, filters, results, loading, error
+  - handleSearch 함수:
+    - setQuery action dispatch
+    - searchUsers thunk dispatch (page: 1)
+  - handleTypeChange 함수:
+    - setFilters action dispatch
+    - searchUsers thunk dispatch (쿼리 재실행)
+  - useEffect: 초기 검색 설정
+    - 조건: query가 없을 때만 실행
+    - 기본 검색: "followers:>1000"
+    - eslint-disable react-hooks/exhaustive-deps
+  - Layout:
+    - SearchBar (상단)
+    - Grid container (spacing: 3)
+      - Grid item md=3: FilterPanel (왼쪽 사이드바)
+      - Grid item md=9: UserList (메인 영역)
+
+- 🐛 **빌드 수정 사항**
+  - ESLint 에러 수정:
+    - TypeFilter.test.tsx에서 미사용 AccountType import 제거
+    - searchSlice.ts에서 미사용 rateLimit 변수 제거
+  - Next.js 빌드 에러 수정:
+    - API route에 `export const dynamic = 'force-dynamic'` 추가
+      (nextUrl.searchParams 사용으로 인한 동적 렌더링 요구)
+    - next.config.js에서 experimental.optimizeCss 제거
+      (critters 모듈 의존성 문제 해결)
+  - 빌드 캐시 정리 후 재빌드
+
+- ✅ **최종 빌드 결과**
+  - Production build 성공 ✓
+  - Linting 통과 ✓
+  - Type check: Jest 타입 에러는 있지만 런타임 정상 (테스트 통과)
+  - Route 생성:
+    - / (Static, 45.6 kB, First Load 168 kB)
+    - /api/search (Dynamic, 0 B)
+  - 총 파일 크기: First Load JS 87.1 kB
+
+- 🚀 **Git 커밋 및 푸시**
+  - 커밋: a2164af "feat(Feature #1): complete implementation with full integration"
+  - 13개 파일 변경 (322 insertions, 7 deletions)
+  - 추가된 파일 (8개):
+    - organisms/SearchBar/SearchBar.tsx, index.ts
+    - organisms/FilterPanel/FilterPanel.tsx, index.ts
+    - organisms/UserCard/UserCard.tsx, index.ts
+    - organisms/UserList/UserList.tsx, index.ts
+  - 수정된 파일:
+    - page.tsx (정적 페이지 → Redux 통합 CSR)
+    - next.config.js, api/search/route.ts
+    - TypeFilter.test.tsx, searchSlice.ts
+
+- 📝 **GitHub Issue #1 업데이트**
+  - 코멘트: Feature #1 완료 선언
+  - 완료된 작업 목록 공유
+  - 테스트 결과 (QueryBuilder 29개, TypeFilter 8개, Build 성공)
+  - 커밋 해시 공유
+
+- 📚 **used_prompts.md 업데이트 (Prompt #15 추가)**
+
+- ✅ **Feature #1 완전 종료**
+  - 모든 8개 태스크 완료
+  - Redux 통합 완료
+  - UI 컴포넌트 완료 (Atomic Design 패턴)
+  - 빌드 및 배포 준비 완료
+  - Feature #2 작업 준비 가능
+
+---
+
 ## 작성 가이드
 
 각 프롬프트 기록은 다음 형식을 따라 작성합니다:
