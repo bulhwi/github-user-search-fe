@@ -930,3 +930,159 @@ export default function Home() {
 ```
 
 ---
+### 프롬프트 17: 무한 스크롤 페이징 기능 구현 (TDD)
+**사용한 도구**: Claude Code
+**날짜**: 2025-11-04
+
+**프롬프트**:
+```
+앞으로 모든 작업은 테스트케이스도 같이 작성하자. 
+[Feature] 무한 스크롤 페이징 (SSR + CSR) 이슈 진행해보자
+```
+
+**작업 내용**:
+TDD(Test-Driven Development) 방식으로 무한 스크롤 페이징 기능 전체 구현
+
+#### 1. useInfiniteScroll Hook 구현 (14 tests)
+**테스트 작성 (Red)**:
+- `useInfiniteScroll.test.ts` 생성 (14개 테스트)
+  - 초기화 테스트 (ref 반환, IntersectionObserver 생성)
+  - 교차 감지 테스트 (onLoadMore 호출, 비호출)
+  - 로딩 상태 처리 (isLoading, hasMore)
+  - 클린업 (disconnect, 옵션 변경)
+  - Edge Cases (null ref, 중복 호출 방지)
+  - 옵션 변경 테스트
+
+**구현 (Green)**:
+- `useInfiniteScroll.ts` Hook 구현
+  - IntersectionObserver API 사용
+  - Sentinel 요소 감지
+  - 중복 로드 방지 (`isLoadingRef` 플래그)
+  - rootMargin, threshold 옵션 지원
+  - observer disconnect 클린업
+
+**결과**: 14/14 tests passed ✅
+
+#### 2. InfiniteScroll Component 구현 (15 tests)
+**테스트 작성 (Red)**:
+- `InfiniteScroll.test.tsx` 생성 (15개 테스트)
+  - 렌더링 테스트 (children, sentinel)
+  - 로딩 상태 (CircularProgress 표시)
+  - hasMore 상태 ("No more results" 메시지)
+  - 커스텀 메시지 (loadingMessage, endMessage)
+  - 커스텀 스타일 (className)
+  - Edge Cases (children 없음, null, 배열)
+  - 접근성 (progressbar, 메시지)
+
+**구현 (Green)**:
+- `InfiniteScroll.tsx` 컴포넌트 구현
+  - useInfiniteScroll Hook 사용
+  - Sentinel 요소 (data-testid="infinite-scroll-sentinel")
+  - MUI CircularProgress
+  - Loading/End 메시지
+  - 커스텀 props 지원
+
+**결과**: 15/15 tests passed ✅
+
+#### 3. UserList & Page 통합
+**UserList 수정**:
+- InfiniteScroll 컴포넌트 통합
+- hasMore, onLoadMore, totalCount props 추가
+- Pagination 정보 표시 개선 ("showing X of Y users")
+
+**Page 수정** (`app/page.tsx`):
+- useSearch Hook에서 loadMore, pagination 사용
+- UserList에 pagination 정보 전달
+- 무한 스크롤 활성화
+
+#### 4. Redux 통합 확인
+**이미 구현된 기능 활용**:
+- `searchSlice.ts`의 pagination 로직 (hasMore 계산)
+- `searchUsers` thunk의 page 파라미터
+- useSearch Hook의 `loadMore` 함수
+- 페이지별 결과 append 로직
+
+#### 5. 테스트 & 빌드
+**전체 테스트**:
+- 총 197 tests passed (기존 168 + 신규 29)
+  - useInfiniteScroll: 14 tests
+  - InfiniteScroll: 15 tests
+  - 모든 기존 테스트 유지
+
+**Production 빌드**:
+- ✅ Build successful
+- ✅ First Load JS: 171 kB
+- ✅ All ESLint rules passed
+
+**ESLint 수정**:
+- unused variables 제거
+- callback 파라미터 미사용 처리
+- import 최적화
+
+#### 6. Git 커밋 & 이슈 완료
+**커밋**:
+```
+feat: implement infinite scroll pagination (SSR + CSR)
+
+TDD 방식으로 무한 스크롤 페이징 기능 구현 완료
+- useInfiniteScroll Hook (14 tests)
+- InfiniteScroll Component (15 tests)
+- UserList & Page 통합
+- 총 197 tests passed
+```
+
+**Issue #11 완료 처리**:
+- GitHub Issue close
+- 완료 코멘트 추가 (구현 내용, 테스트 결과)
+- PDF 요구사항 충족 확인
+
+**결과**:
+- ✅ 무한 스크롤 기능 완전 구현
+- ✅ TDD 프로세스 준수 (Red → Green → Refactor)
+- ✅ 29개 새 테스트 추가
+- ✅ Production 빌드 성공
+- ✅ Issue #11 완료
+
+#### 구현 파일
+**신규 생성** (5개):
+1. `src/features/results/hooks/useInfiniteScroll.ts`
+2. `src/features/results/hooks/useInfiniteScroll.test.ts`
+3. `src/features/results/hooks/index.ts`
+4. `src/features/results/components/InfiniteScroll.tsx`
+5. `src/features/results/components/InfiniteScroll.test.tsx`
+
+**수정** (5개):
+1. `src/features/results/components/UserList.tsx`
+2. `src/app/page.tsx`
+3. `src/features/filters/components/TypeFilter.test.tsx` (ESLint)
+4. `src/features/filters/components/SearchInFilter.test.tsx` (ESLint)
+5. `src/store/slices/searchSlice.test.ts` (ESLint)
+
+#### TDD 프로세스 학습
+**Red → Green → Refactor 사이클**:
+1. **Red**: 테스트 먼저 작성 (실패 확인)
+2. **Green**: 최소한의 코드로 테스트 통과
+3. **Refactor**: 코드 개선 (중복 제거, 성능 최적화)
+
+**적용 예시**:
+- useInfiniteScroll: 테스트 실패 → Hook 구현 → 중복 로드 방지 추가
+- InfiniteScroll: 테스트 실패 → Component 구현 → ESLint 수정
+
+#### 기술 포인트
+**IntersectionObserver API**:
+- Sentinel 요소 관찰
+- rootMargin으로 미리 로딩 (100px)
+- threshold로 감지 시점 조절
+
+**중복 로드 방지**:
+- `isLoadingRef` ref로 플래그 관리
+- isLoading prop과 분리된 내부 상태
+- useEffect로 플래그 초기화
+
+**테스트 Mock**:
+- IntersectionObserver Mock 설정
+- callback 시뮬레이션
+- observe/unobserve/disconnect 검증
+
+---
+
