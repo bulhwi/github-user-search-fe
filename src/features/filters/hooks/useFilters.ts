@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { setFilters, searchUsers } from '@/store/slices/searchSlice'
-import type { AccountType } from '@/types'
+import type { AccountType, SearchInField } from '@/types'
 
 /**
  * Filters Feature Hook (Application Layer)
@@ -19,6 +19,15 @@ export function useFilters() {
     (type: AccountType | null) => {
       dispatch(setFilters({ type }))
       // 필터 변경 시 첫 페이지부터 재검색
+      dispatch(searchUsers({ query, page: 1 }))
+    },
+    [dispatch, query]
+  )
+
+  // 검색 필드 필터 변경 (Feature #2)
+  const setSearchIn = useCallback(
+    (searchIn: SearchInField[]) => {
+      dispatch(setFilters({ searchIn }))
       dispatch(searchUsers({ query, page: 1 }))
     },
     [dispatch, query]
@@ -63,6 +72,7 @@ export function useFilters() {
   return {
     filters,
     setType,
+    setSearchIn,
     setLocation,
     setLanguage,
     setRepos,

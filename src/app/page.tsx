@@ -19,7 +19,7 @@ export default function Home() {
   const { query, results, loading, error, handleSearch } = useSearch()
 
   // Application Layer: 필터 로직
-  const { filters, setType } = useFilters()
+  const { filters, setType, setSearchIn } = useFilters()
 
   return (
     <Container maxWidth="xl" className="py-8">
@@ -36,7 +36,12 @@ export default function Home() {
 
       <Grid container spacing={3}>
         <Grid item xs={12} md={3}>
-          <FilterPanel type={filters.type} onTypeChange={setType} />
+          <FilterPanel
+            type={filters.type}
+            onTypeChange={setType}
+            searchIn={filters.searchIn}
+            onSearchInChange={setSearchIn}
+          />
         </Grid>
 
         <Grid item xs={12} md={9}>
