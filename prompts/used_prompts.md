@@ -784,6 +784,135 @@ export default function Home() {
 
 ---
 
+### 프롬프트 17: 추가 기능 GitHub Issues 등록
+**사용한 도구**: Claude Code
+
+**프롬프트**:
+```
+3. E2E 테스트: Cypress 테스트 작성
+4. Canvas + WebAssembly: 아바타 이미지 렌더링
+5. 무한 스크롤: CSR 페이징
+이것들에 대한 이슈등록이나 태스크는 어디에 등록한거야 ?? 등록안했다면 신규로 정리해서 등록해보자
+```
+
+**결과**:
+- 📋 **추가 GitHub Issues 7개 생성 완료**
+
+#### 새로 등록된 Issues
+
+**Infrastructure & Testing (3개)**:
+1. **Issue #9**: [Infrastructure] E2E 테스트 구현 (Cypress)
+   - 사용자 시나리오 기반 통합 테스트
+   - 검색/필터/에러 핸들링 플로우
+   - SSR/CSR 경계 로직 테스트
+   - CI/CD 파이프라인 통합
+
+2. **Issue #10**: [Feature] 아바타 이미지 렌더링 (Canvas + WebAssembly)
+   - HTML5 Canvas API 렌더링
+   - WASM 이미지 최적화 (리사이징, 압축)
+   - UserAvatar 컴포넌트 생성
+   - 성능 목표: 로딩 < 100ms, 메모리 30% 감소
+
+3. **Issue #13**: [Feature] Rate Limit 처리 및 UI 표시
+   - X-RateLimit-* 헤더 파싱
+   - Exponential Backoff 재시도 (최대 3회)
+   - RateLimitIndicator 컴포넌트
+   - 남은 쿼터 + Reset 시간 표시
+
+**UI/UX Features (3개)**:
+4. **Issue #11**: [Feature] 무한 스크롤 페이징 (SSR + CSR)
+   - SSR 첫 페이지 (30개 결과)
+   - IntersectionObserver 기반 무한 스크롤
+   - useInfiniteScroll Hook
+   - InfiniteScroll 컴포넌트
+   - Redux pagination.hasMore 관리
+
+5. **Issue #12**: [Feature] 정렬 기능 (Sort + Order)
+   - 정렬 옵션: Best Match, Followers, Repositories, Joined
+   - DESC/ASC 토글
+   - SortControl 컴포넌트
+   - useSort Hook
+   - FilterPanel 통합
+
+6. **Issue #14**: [UI/UX] 다크모드 지원 (System Preference)
+   - prefers-color-scheme 미디어 쿼리 감지
+   - MUI Light/Dark 테마 정의
+   - useTheme Hook
+   - Theme Toggle UI (헤더)
+   - localStorage 설정 저장
+
+**Documentation (1개)**:
+7. **Issue #15**: [Documentation] README 작성
+   - 프로젝트 소개 + 스크린샷
+   - 설치 및 실행 가이드
+   - 테스트 실행 방법 (Jest, Cypress)
+   - 구현 스펙 명세 (Clean Architecture)
+   - **MUI + Tailwind CSS 주의사항** ⭐
+   - 디렉토리 구조 설명
+
+#### Issue #1 업데이트
+- Clean Architecture 리팩토링 완료 코멘트 추가
+- Layer 분리 및 Feature 모듈화 완료 공지
+- Before/After 구조 비교
+- 테스트 결과 공유
+
+#### 전체 Issues 현황
+```
+총 15개 Issues:
+- Feature #1-#8: 8개 (검색 기능)
+  - ✅ Feature #1: 완료 (+ Clean Architecture 적용)
+  - ⏳ Feature #2-#8: 진행 예정
+
+- Infrastructure/Testing: 3개
+  - Issue #9: E2E 테스트
+  - Issue #10: Canvas + WASM
+  - Issue #13: Rate Limit
+
+- UI/UX: 3개
+  - Issue #11: 무한 스크롤
+  - Issue #12: 정렬 기능
+  - Issue #14: 다크모드
+
+- Documentation: 1개
+  - Issue #15: README
+```
+
+#### 우선순위 추천
+
+**Phase 1: 핵심 검색 기능 (Day 1-2)**
+- [x] Feature #1 ✅
+- [ ] Feature #2-#8 (7개)
+- [ ] Issue #12 정렬 기능
+
+**Phase 2: 사용자 경험 (Day 2)**
+- [ ] Issue #11 무한 스크롤
+- [ ] Issue #13 Rate Limit
+- [ ] Issue #14 다크모드
+
+**Phase 3: 최적화 & 테스트 (Day 3)**
+- [ ] Issue #10 Canvas + WASM
+- [ ] Issue #9 E2E 테스트
+- [ ] Issue #15 README
+
+#### 진행 상황
+- **완료**: 1/15 (6.7%)
+  - Feature #1: 타입 검색 + Clean Architecture
+- **남은 작업**: 14개
+- **다음 작업**: Feature #2 (계정 이름/성명/메일 검색)
+
+#### PDF 요구사항 매핑
+모든 PDF 요구사항이 Issues로 등록됨:
+- ✅ 8가지 검색 기능: Issue #1-#8
+- ✅ E2E 테스트: Issue #9
+- ✅ Canvas + WASM: Issue #10
+- ✅ 무한 스크롤: Issue #11
+- ✅ 정렬 기능: Issue #12
+- ✅ Rate Limit: Issue #13
+- ✅ 다크모드: Issue #14
+- ✅ README: Issue #15
+
+---
+
 ## 작성 가이드
 
 각 프롬프트 기록은 다음 형식을 따라 작성합니다:
