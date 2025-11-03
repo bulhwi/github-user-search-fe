@@ -1,9 +1,19 @@
 # Technical Specification
 # GitHub User Search Application
 
-**버전**: 1.0.0
+**버전**: 2.0.0
 **작성일**: 2025-11-03
+**최종 수정**: 2025-11-03
 **상태**: Draft
+
+> **⚠️ 중요 업데이트 (v2.0.0)**
+>
+> 아키텍처가 다음과 같이 변경되었습니다:
+> - **상태 관리**: ~~Redux Toolkit~~ → **React Query + Context API**
+> - **디자인 패턴**: ~~Clean Architecture~~ → **Atomic Design Pattern**
+> - **HTTP Client**: **Axios** 추가
+>
+> 이 문서는 새로운 아키텍처 기준으로 업데이트되었습니다.
 
 ---
 
@@ -32,10 +42,11 @@ GitHub REST API를 활용한 사용자 검색 웹 애플리케이션의 기술 �
 ### 1.1 기술적 목표
 
 - **성능**: FCP < 1.8s, TTI < 3.8s
-- **확장성**: Clean Architecture 기반 모듈화
+- **확장성**: Atomic Design Pattern 기반 컴포넌트 모듈화
 - **유지보수성**: TypeScript strict mode, 명확한 타입 정의
 - **테스트 커버리지**: 핵심 로직 100% 커버
 - **접근성**: WCAG 2.1 AA 준수
+- **상태 관리**: React Query로 서버 상태와 클라이언트 상태 명확히 분리
 
 ---
 
@@ -53,8 +64,10 @@ GitHub REST API를 활용한 사용자 검색 웹 애플리케이션의 기술 �
 
 | 기술 | 버전 | 용도 |
 |------|------|------|
-| Redux Toolkit | 2.9.2 | Global State Management |
-| React Redux | 9.2.0 | React Bindings |
+| @tanstack/react-query | 5.90.6 | Server State Management & Caching |
+| @tanstack/react-query-devtools | 5.90.2 | React Query DevTools |
+| React Context API | Built-in | Client State Management |
+| Axios | 1.13.1 | HTTP Client |
 
 ### 2.3 UI/Styling
 
@@ -1444,6 +1457,7 @@ NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
 | 버전 | 날짜 | 작성자 | 변경 내용 |
 |------|------|--------|-----------|
 | 1.0.0 | 2025-11-03 | Claude Code | 초기 작성 |
+| 2.0.0 | 2025-11-03 | Claude Code | 아키텍처 대규모 변경: Redux Toolkit → React Query + Context API, Clean Architecture → Atomic Design Pattern, Axios 추가 |
 
 ---
 

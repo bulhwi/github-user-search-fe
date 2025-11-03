@@ -32,7 +32,9 @@ GitHub REST API를 활용하여 사용자를 검색하고, 다양한 필터 조�
 - **Language**: TypeScript (ES2023)
 - **UI Library**: Material-UI (MUI) v6
 - **Styling**: Tailwind CSS v3
-- **State Management**: Redux Toolkit
+- **State Management**: React Query + Context API
+- **HTTP Client**: Axios
+- **Design Pattern**: Atomic Design
 
 ### 2.2 Testing
 - **Unit Test**: Jest + React Testing Library
@@ -120,7 +122,17 @@ GitHub REST API를 활용하여 사용자를 검색하고, 다양한 필터 조�
 
 ## 4. 기술 아키텍처 (Technical Architecture)
 
-### 4.1 디렉토리 구조
+### 4.1 디자인 패턴: Atomic Design
+
+프로젝트는 Atomic Design Pattern을 따릅니다:
+
+- **Atoms**: 기본 UI 요소 (Button, Input, Icon 등)
+- **Molecules**: Atoms의 조합 (SearchInput, FilterChip 등)
+- **Organisms**: Molecules의 조합 (SearchBar, FilterPanel, UserCard 등)
+- **Templates**: Organisms의 레이아웃
+- **Pages**: 완전한 페이지
+
+### 4.2 디렉토리 구조
 ```
 github-user-search-fe/
 ├── src/
@@ -130,48 +142,78 @@ github-user-search-fe/
 │   │   │       └── route.ts
 │   │   ├── layout.tsx         # 루트 레이아웃
 │   │   ├── page.tsx           # 홈 페이지
-│   │   ├── providers.tsx      # Redux + MUI Provider
+│   │   ├── providers.tsx      # React Query + MUI Provider
 │   │   └── globals.css
-│   ├── features/              # Feature Modules
-│   │   ├── search/            # 검색 UI + 로직
-│   │   │   ├── components/
-│   │   │   ├── hooks/
-│   │   │   └── __tests__/
-│   │   ├── filters/           # 필터 UI + 로직
-│   │   │   ├── components/
-│   │   │   ├── hooks/
-│   │   │   └── __tests__/
-│   │   └── results/           # 결과 표시 + 페이징
-│   │       ├── components/
-│   │       ├── hooks/
-│   │       └── __tests__/
-│   ├── shared/                # 공유 모듈
-│   │   ├── ui/               # 재사용 가능 UI 컴포넌트
-│   │   ├── api/              # API 클라이언트
-│   │   ├── hooks/            # 공통 훅
-│   │   └── utils/            # 유틸리티 함수
-│   ├── store/                # Redux Store
-│   │   ├── index.ts
-│   │   └── slices/
-│   │       ├── searchSlice.ts
-│   │       └── uiSlice.ts
+│   │
+│   ├── components/            # Atomic Design 컴포넌트
+│   │   ├── atoms/            # 기본 UI 요소
+│   │   │   ├── Button/
+│   │   │   ├── Input/
+│   │   │   ├── Icon/
+│   │   │   ├── Avatar/
+│   │   │   └── Badge/
+│   │   ├── molecules/        # Atoms 조합
+│   │   │   ├── SearchInput/
+│   │   │   ├── FilterChip/
+│   │   │   ├── UserInfo/
+│   │   │   └── StatCard/
+│   │   ├── organisms/        # Molecules 조합
+│   │   │   ├── SearchBar/
+│   │   │   ├── FilterPanel/
+│   │   │   ├── UserCard/
+│   │   │   ├── UserList/
+│   │   │   └── RateLimitIndicator/
+│   │   ├── templates/        # 페이지 레이아웃
+│   │   │   └── SearchPageTemplate/
+│   │   └── pages/            # 완전한 페이지
+│   │       └── HomePage/
+│   │
+│   ├── contexts/             # React Context API
+│   │   ├── SearchContext.tsx
+│   │   ├── FilterContext.tsx
+│   │   └── ThemeContext.tsx
+│   │
+│   ├── hooks/                # Custom Hooks
+│   │   ├── queries/         # React Query Hooks
+│   │   │   ├── useSearchUsers.ts
+│   │   │   └── useRateLimit.ts
+│   │   ├── useDebounce.ts
+│   │   ├── useInfiniteScroll.ts
+│   │   └── useMediaQuery.ts
+│   │
+│   ├── services/             # API Services
+│   │   ├── github.service.ts
+│   │   └── query-builder.service.ts
+│   │
+│   ├── utils/                # Utility Functions
+│   │   ├── date.ts
+│   │   ├── format.ts
+│   │   └── validation.ts
+│   │
 │   └── types/                # TypeScript 타입 정의
-│       └── github.ts
+│       ├── github.ts
+│       ├── search.ts
+│       └── ui.ts
+│
 ├── cypress/                   # E2E 테스트
 │   └── e2e/
 ├── prompts/                   # AI 프롬프트 기록
 │   └── used_prompts.md
+├── docs/                      # 문서
+│   ├── PRD.md                # 본 문서
+│   └── TECHNICAL_SPECIFICATION.md
 ├── CLAUDE.md                  # Claude Code 가이드
-├── PRD.md                     # 본 문서
 └── README.md                  # 프로젝트 설명
 ```
 
-### 4.2 데이터 플로우
+### 4.3 데이터 플로우
 
 ```
 User Input (검색어 + 필터)
     ↓
-Redux Action Dispatch
+Context API (SearchContext) - 상태 업데이트
+    ↓
+React Query Hook (useSearchUsers) - API 호출
     ↓
 Server Route API Call (/api/search)
     ↓
@@ -179,51 +221,25 @@ GitHub REST API (with Auth Token)
     ↓
 Response + Rate Limit Info
     ↓
-Redux State Update
+React Query Cache Update - 자동 캐싱
     ↓
 React Component Re-render
     ↓
 User Sees Results
 ```
 
-### 4.3 State Management
+### 4.4 State Management
 
-#### 4.3.1 Search Slice
-```typescript
-interface SearchState {
-  query: string
-  filters: {
-    type: 'user' | 'org' | null
-    location: string
-    language: string
-    repos: { min: number, max: number }
-    followers: { min: number, max: number }
-    created: { after: string, before: string }
-    sponsorable: boolean
-  }
-  sort: 'best-match' | 'followers' | 'repositories' | 'joined'
-  results: GitHubUser[]
-  pagination: {
-    page: number
-    totalCount: number
-    hasMore: boolean
-  }
-  loading: boolean
-  error: string | null
-}
-```
+#### 4.4.1 React Query
+- **서버 상태 관리**: GitHub API 데이터 캐싱 및 동기화
+- **자동 리패칭**: 윈도우 포커스, 네트워크 재연결 시
+- **Optimistic Updates**: 사용자 경험 개선
+- **무한 스크롤**: useInfiniteQuery 사용
 
-#### 4.3.2 UI Slice
-```typescript
-interface UIState {
-  darkMode: boolean
-  rateLimit: {
-    limit: number
-    remaining: number
-    reset: number
-  }
-}
-```
+#### 4.4.2 Context API
+- **SearchContext**: 검색 쿼리, 필터 상태
+- **FilterContext**: 필터 UI 상태
+- **ThemeContext**: 다크모드 상태 (시스템 연동)
 
 ---
 
@@ -385,11 +401,12 @@ Accept: application/vnd.github.v3+json
 ### Day 1: 기반 설정 + 핵심 기능
 - [x] 프로젝트 초기화
 - [x] 설정 파일 작성
-- [x] 디렉토리 구조 생성
+- [x] 디렉토리 구조 생성 (Atomic Design)
+- [x] React Query + Context API 설정
 - [ ] 타입 정의
 - [ ] GitHub API 클라이언트
 - [ ] 검색 기능 (기본)
-- [ ] Redux 설정
+- [ ] Context 설정
 
 ### Day 2: UI/UX + 고급 기능
 - [ ] 검색 UI 컴포넌트
@@ -461,7 +478,8 @@ Accept: application/vnd.github.v3+json
 - [Next.js App Router](https://nextjs.org/docs/app)
 - [MUI Components](https://mui.com/material-ui/getting-started/)
 - [Tailwind CSS](https://tailwindcss.com/docs)
-- [Redux Toolkit](https://redux-toolkit.js.org/)
+- [React Query (TanStack Query)](https://tanstack.com/query/latest)
+- [Atomic Design](https://bradfrost.com/blog/post/atomic-web-design/)
 
 ### 11.3 Testing
 - [Jest](https://jestjs.io/docs/getting-started)
@@ -475,6 +493,7 @@ Accept: application/vnd.github.v3+json
 | 버전 | 날짜 | 작성자 | 변경 내용 |
 |------|------|--------|-----------|
 | 1.0.0 | 2025-11-03 | Claude Code | 초기 작성 |
+| 1.1.0 | 2025-11-03 | Claude Code | 아키텍처 변경: Redux Toolkit → React Query + Context API, Clean Architecture → Atomic Design Pattern |
 
 ---
 

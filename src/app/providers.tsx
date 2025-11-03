@@ -2,14 +2,29 @@
 
 import { ThemeProvider, createTheme } from '@mui/material/styles'
 import CssBaseline from '@mui/material/CssBaseline'
-import { Provider } from 'react-redux'
-import { store } from '@/store'
-import { useMemo } from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { useMemo, useState } from 'react'
 import useMediaQuery from '@mui/material/useMediaQuery'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
 
+  // React Query Client
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 60 * 1000, // 1 minute
+            retry: 1,
+            refetchOnWindowFocus: false,
+          },
+        },
+      })
+  )
+
+  // MUI Theme
   const theme = useMemo(
     () =>
       createTheme({
@@ -30,11 +45,12 @@ export function Providers({ children }: { children: React.ReactNode }) {
   )
 
   return (
-    <Provider store={store}>
+    <QueryClientProvider client={queryClient}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
         {children}
       </ThemeProvider>
-    </Provider>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   )
 }

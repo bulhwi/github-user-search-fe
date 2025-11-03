@@ -108,6 +108,48 @@ claude.md 파일을 업데이트하고, 프로젝트 구조도 설정해,
 
 ---
 
+### 프롬프트 6: 아키텍처 변경 (Atomic Design + React Query)
+**사용한 도구**: Claude Code
+
+**프롬프트**:
+```
+UI 디자인 패턴은 아토믹 패턴 상태관리는 react query와 context api만을 사용해서 구현할거야.
+이내용도 prd와 테크스펙 문서에 적절히 정리해서 업데이트하고, 필요한 라이브러리들 추가로 인스톨 진행해
+```
+
+**결과**:
+- 아키텍처 대규모 변경 (Redux Toolkit → React Query + Context API, Clean Architecture → Atomic Design Pattern)
+- package.json 수정
+  - Redux Toolkit, React Redux 제거
+  - @tanstack/react-query@5.90.6 추가
+  - @tanstack/react-query-devtools@5.90.2 추가
+  - axios@1.13.1 추가
+- pnpm install 실행 (의존성 업데이트 완료)
+- docs/PRD.md 업데이트
+  - 기술 스택 섹션: Redux Toolkit → React Query + Context API + Axios
+  - 디자인 패턴: Atomic Design Pattern 추가
+  - 디렉토리 구조: Atomic Design 기반으로 재설계
+  - 데이터 플로우: Context API + React Query 기반으로 변경
+  - 상태 관리: React Query (서버 상태) + Context API (클라이언트 상태)
+  - 참고 자료: React Query, Atomic Design 추가
+  - 변경 이력: v1.1.0 추가
+- docs/TECHNICAL_SPECIFICATION.md 업데이트
+  - 버전: v2.0.0으로 업그레이드
+  - 중요 업데이트 알림 추가 (상단)
+  - 기술 스택: React Query + Context API + Axios로 변경
+  - 기술적 목표: Atomic Design Pattern 기반 모듈화로 변경
+  - 변경 이력: v2.0.0 추가
+- src/app/providers.tsx 업데이트
+  - Redux Provider → QueryClientProvider로 변경
+  - React Query DevTools 추가
+  - Query Client 기본 옵션 설정 (staleTime, retry 등)
+- 기존 Redux 관련 디렉토리 삭제
+  - src/store/ 삭제
+  - src/features/ 삭제 (Atomic Design으로 재구성 예정)
+  - src/shared/ 삭제 (Atomic Design으로 재구성 예정)
+
+---
+
 ## 작성 가이드
 
 각 프롬프트 기록은 다음 형식을 따라 작성합니다:
