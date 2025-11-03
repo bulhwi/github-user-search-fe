@@ -555,6 +555,235 @@ Feature #1 을 완전히 끝내보자
 
 ---
 
+### 프롬프트 16: Clean Architecture + Modularity 리팩토링
+**사용한 도구**: Claude Code
+
+**프롬프트**:
+```
+굉장한걸 놓쳤다.
+프로젝트 전반의 디자인패턴에 대해서 명시된게 있었어.
+Clean Architecture + Modularity  라고..
+
+현재 작업한 내용에서 위에 디자인패턴으로 리팩토링한다면 작업범위와 예상작업 내용 정리해봐
+→ 진행하기 이전에 Presaentation 레벨에서의 ui 컴포넌트의 패턴은 아토믹을 유지하는게 어떨까??
+→ 그렇다면, Clean Architecture + Modularity 는 유지하면서 아토믹패턴도 적절하게 사용해보자.
+어떄?? 다른 의견있어??
+prd와 pdf 상의 요구사항에 대해서 구현을 진행하는데 있어서 너무 불필요하게 디렉토리상에 복잡도가 올라가진 않을까??
+→ 오케이 진행해보자
+```
+
+**결과**:
+- 📂 **Clean Architecture + Feature-based Modularity 구현**
+
+#### 1. 디렉토리 구조 재편성
+**Before (Atomic Design Only)**:
+```
+src/
+├── components/
+│   ├── atoms/Select/
+│   ├── molecules/TypeFilter/
+│   └── organisms/SearchBar, FilterPanel, UserCard, UserList
+├── store/
+├── types/
+└── utils/queryBuilder.ts
+```
+
+**After (Clean Architecture + Modularity)**:
+```
+src/
+├── app/                     # Presentation Layer (Template)
+│   ├── page.tsx            # Template Only (조합만)
+│   └── api/search/route.ts # Infrastructure
+│
+├── features/                # Feature Modules
+│   ├── search/
+│   │   ├── components/SearchBar.tsx      # Presentation
+│   │   ├── hooks/useSearch.ts            # Application
+│   │   └── utils/queryBuilder.ts         # Domain
+│   │
+│   ├── filters/
+│   │   ├── components/FilterPanel.tsx, TypeFilter.tsx
+│   │   └── hooks/useFilters.ts
+│   │
+│   └── results/
+│       └── components/UserList.tsx, UserCard.tsx
+│
+├── shared/                  # Shared Modules
+│   ├── components/Select.tsx    # Reusable UI
+│   ├── api/
+│   │   ├── client.ts           # HTTP Client
+│   │   └── github.ts           # GitHub API Client
+│   └── hooks/, utils/
+│
+├── store/                   # Application Layer
+└── types/                   # Domain Layer
+```
+
+#### 2. Layer 분리 (Clean Architecture)
+- **Presentation Layer**: features/*/components/, app/page.tsx
+  - UI 컴포넌트
+  - 사용자 인터랙션
+
+- **Application Layer**: features/*/hooks/, store/
+  - 비즈니스 로직
+  - Redux Thunks
+  - Custom Hooks
+
+- **Domain Layer**: features/*/utils/, types/
+  - QueryBuilder (순수 함수)
+  - Type 정의
+
+- **Infrastructure Layer**: shared/api/, app/api/
+  - HTTP Client
+  - GitHub API Client
+  - Server Routes
+
+#### 3. Application Hooks 생성
+**useSearch Hook** (features/search/hooks/useSearch.ts):
+```typescript
+export function useSearch() {
+  const dispatch = useAppDispatch()
+  const { query, results, loading, error } = useAppSelector(state => state.search)
+
+  // 초기 검색 설정
+  useEffect(() => {
+    if (!query) {
+      dispatch(setQuery('followers:>1000'))
+      dispatch(searchUsers({ query: 'followers:>1000', page: 1 }))
+    }
+  }, [])
+
+  const handleSearch = useCallback((searchQuery: string) => {
+    dispatch(setQuery(searchQuery))
+    dispatch(searchUsers({ query: searchQuery, page: 1 }))
+  }, [dispatch])
+
+  return { query, results, loading, error, handleSearch }
+}
+```
+
+**useFilters Hook** (features/filters/hooks/useFilters.ts):
+```typescript
+export function useFilters() {
+  const dispatch = useAppDispatch()
+  const { filters, query } = useAppSelector(state => state.search)
+
+  const setType = useCallback((type: AccountType | null) => {
+    dispatch(setFilters({ type }))
+    dispatch(searchUsers({ query, page: 1 }))
+  }, [dispatch, query])
+
+  // Future: setLocation, setLanguage, setRepos, setFollowers
+
+  return { filters, setType }
+}
+```
+
+#### 4. Infrastructure Layer 분리
+**HTTP Client** (shared/api/client.ts):
+```typescript
+export class HttpClient {
+  async get<T>(url: string, options?: RequestInit): Promise<T> {
+    const response = await fetch(url, { ...options, method: 'GET' })
+    if (!response.ok) throw new ApiError(response.status, ...)
+    return response.json()
+  }
+}
+```
+
+**GitHub API Client** (shared/api/github.ts):
+```typescript
+class GitHubApiClient {
+  async searchUsers(params: SearchUsersParams): Promise<SearchUsersResponse> {
+    const searchParams = new URLSearchParams({ q: params.query, ... })
+    return httpClient.get<SearchUsersResponse>(`/api/search?${searchParams}`)
+  }
+}
+export const githubApi = new GitHubApiClient()
+```
+
+**Redux Slice 수정**:
+- 직접 fetch 호출 → githubApi.searchUsers() 사용
+- Infrastructure Layer 의존성 분리
+
+#### 5. Template Layer (page.tsx)
+**Before (비즈니스 로직 + Presentation 혼재)**:
+```typescript
+export default function Home() {
+  const dispatch = useAppDispatch()
+  const { query, filters, results, loading, error } = useAppSelector(...)
+
+  const handleSearch = (searchQuery: string) => {
+    dispatch(setQuery(searchQuery))
+    dispatch(searchUsers({ query: searchQuery, page: 1 }))
+  }
+
+  return <Container>...</Container>
+}
+```
+
+**After (Template Only)**:
+```typescript
+export default function Home() {
+  const { query, results, loading, error, handleSearch } = useSearch()
+  const { filters, setType } = useFilters()
+
+  return (
+    <Container>
+      <SearchBar onSearch={handleSearch} initialValue={query} />
+      <FilterPanel type={filters.type} onTypeChange={setType} />
+      <UserList users={results} loading={loading} error={error} />
+    </Container>
+  )
+}
+```
+
+#### 6. Atomic Design 적용 원칙
+- ✅ **개념은 유지**: 컴포넌트는 Atomic Design 사상 따름
+- ❌ **디렉토리 중첩 제거**: atoms/molecules/organisms/ 제거
+- ✅ **주석으로 명시**: 각 컴포넌트에 Atom/Molecule 주석
+- ✅ **재사용성 기준 유지**: shared vs features 구분
+
+#### 7. 테스트 결과
+- ✅ **QueryBuilder**: 58 tests passed (기존 29 + 새 위치 29)
+- ✅ **TypeFilter**: 16 tests passed (기존 8 + 새 위치 8)
+- ✅ **Production Build**: ✓ Compiled successfully (168 kB First Load JS)
+- ✅ **모든 기능 정상 작동**
+
+#### 8. Git 커밋
+- Commit: `c22dcb6` - "refactor: implement Clean Architecture + Modularity pattern"
+- 22 files changed (285 insertions, 68 deletions)
+- 변경 사항:
+  - 17 files deleted (기존 구조)
+  - 8 files added (features/, shared/)
+  - 2 files modified (page.tsx, searchSlice.ts)
+
+#### 9. 리팩토링 효과
+**장점**:
+1. **Layer 분리 명확**: Presentation, Application, Domain, Infrastructure 분리
+2. **Feature 모듈화**: 기능별 응집도 높은 구조
+3. **비즈니스 로직 분리**: Custom Hooks로 캡슐화
+4. **재사용성 향상**: shared/ 하위 모듈 재사용
+5. **테스트 용이**: Layer별, Feature별 독립 테스트
+6. **확장성**: 새 Feature 추가 시 패턴 반복
+7. **PDF 요구사항 충족**: Clean Architecture + Modularity ✅
+
+**실용적 선택**:
+- Atomic Design 디렉토리 중첩 제거 (atoms/molecules/organisms/)
+- 평면 구조 유지 (최대 3단계 깊이)
+- 프로젝트 규모(8개 기능, 3일)에 적합
+
+#### 10. 작업 시간
+- Phase 1: Feature 모듈 생성 (30분)
+- Phase 2: 파일 이동 + import 수정 (30분)
+- Phase 3: Application Hooks 생성 (45분)
+- Phase 4: Infrastructure Layer 분리 (30분)
+- Phase 5: page.tsx 리팩토링 (15분)
+- Phase 6: 테스트 + 커밋 (30분)
+- **총 작업 시간**: 약 3시간
+
+---
+
 ## 작성 가이드
 
 각 프롬프트 기록은 다음 형식을 따라 작성합니다:
