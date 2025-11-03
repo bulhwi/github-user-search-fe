@@ -1,6 +1,6 @@
 'use client'
 
-import { Select, SelectOption } from '@/components/atoms/Select'
+import { Select, SelectOption } from '@/shared/components/Select'
 import type { AccountType } from '@/types'
 
 export interface TypeFilterProps {

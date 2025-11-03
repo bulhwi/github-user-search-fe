@@ -1,7 +1,7 @@
 'use client'
 
 import { Grid, Typography, Box, CircularProgress } from '@mui/material'
-import { UserCard } from '@/components/organisms/UserCard'
+import { UserCard } from '@/features/results/components/UserCard'
 import type { GitHubUser, LoadingState } from '@/types'
 
 export interface UserListProps {

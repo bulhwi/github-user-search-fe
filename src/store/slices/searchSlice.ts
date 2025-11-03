@@ -6,7 +6,8 @@ import type {
   PaginationState,
   LoadingState,
 } from '@/types'
-import { buildSearchQuery } from '@/utils/queryBuilder'
+import { buildSearchQuery } from '@/features/search/utils/queryBuilder'
+import { githubApi } from '@/shared/api/github'
 
 export interface SearchState {
   query: string
@@ -53,29 +54,20 @@ export const searchUsers = createAsyncThunk(
       const state = getState() as { search: SearchState }
       const queryString = buildSearchQuery(params.query, state.search.filters)
 
-      const searchParams = new URLSearchParams()
-      searchParams.set('q', queryString)
-      if (state.search.sort !== 'best-match') {
-        searchParams.set('sort', state.search.sort)
-      }
-      searchParams.set('order', 'desc')
-      searchParams.set('page', (params.page || 1).toString())
-      searchParams.set('per_page', state.search.pagination.perPage.toString())
-
-      const response = await fetch(`/api/search?${searchParams.toString()}`)
-
-      if (!response.ok) {
-        const error = await response.json()
-        return rejectWithValue(error.message || 'Search failed')
-      }
-
-      const data = await response.json()
-      return {
-        ...data,
+      const response = await githubApi.searchUsers({
+        query: queryString,
         page: params.page || 1,
-      }
+        perPage: state.search.pagination.perPage,
+        sort: state.search.sort !== 'best-match' ? state.search.sort : undefined,
+        order: 'desc',
+      })
+
+      return response
     } catch (error) {
-      return rejectWithValue('Network error')
+      if (error instanceof Error) {
+        return rejectWithValue(error.message)
+      }
+      return rejectWithValue('Search failed')
     }
   }
 )

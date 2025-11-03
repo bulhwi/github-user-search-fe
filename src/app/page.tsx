@@ -1,39 +1,25 @@
 'use client'
 
-import { useEffect } from 'react'
 import { Container, Typography, Box, Grid } from '@mui/material'
-import { SearchBar } from '@/components/organisms/SearchBar'
-import { FilterPanel } from '@/components/organisms/FilterPanel'
-import { UserList } from '@/components/organisms/UserList'
-import { useAppDispatch, useAppSelector } from '@/store/hooks'
-import { searchUsers, setQuery, setFilters } from '@/store/slices/searchSlice'
-import type { AccountType } from '@/types'
+import { useSearch } from '@/features/search/hooks/useSearch'
+import { useFilters } from '@/features/filters/hooks/useFilters'
+import { SearchBar } from '@/features/search/components/SearchBar'
+import { FilterPanel } from '@/features/filters/components/FilterPanel'
+import { UserList } from '@/features/results/components/UserList'
 
+/**
+ * Home Page (Template Layer)
+ *
+ * Clean Architecture의 최상위 Presentation Layer
+ * - 비즈니스 로직은 Custom Hooks에 위임
+ * - 순수하게 컴포넌트 조합과 Layout만 담당
+ */
 export default function Home() {
-  const dispatch = useAppDispatch()
-  const { query, filters, results, loading, error } = useAppSelector(
-    (state) => state.search
-  )
+  // Application Layer: 검색 로직
+  const { query, results, loading, error, handleSearch } = useSearch()
 
-  // Initial search on mount
-  useEffect(() => {
-    if (!query) {
-      // Default search: users with followers > 1000
-      dispatch(setQuery('followers:>1000'))
-      dispatch(searchUsers({ query: 'followers:>1000', page: 1 }))
-    }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
-
-  const handleSearch = (searchQuery: string) => {
-    dispatch(setQuery(searchQuery))
-    dispatch(searchUsers({ query: searchQuery, page: 1 }))
-  }
-
-  const handleTypeChange = (type: AccountType | null) => {
-    dispatch(setFilters({ type }))
-    // Re-search with updated filter
-    dispatch(searchUsers({ query, page: 1 }))
-  }
+  // Application Layer: 필터 로직
+  const { filters, setType } = useFilters()
 
   return (
     <Container maxWidth="xl" className="py-8">
@@ -50,7 +36,7 @@ export default function Home() {
 
       <Grid container spacing={3}>
         <Grid item xs={12} md={3}>
-          <FilterPanel type={filters.type} onTypeChange={handleTypeChange} />
+          <FilterPanel type={filters.type} onTypeChange={setType} />
         </Grid>
 
         <Grid item xs={12} md={9}>

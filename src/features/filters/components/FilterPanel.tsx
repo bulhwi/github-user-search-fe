@@ -1,7 +1,7 @@
 'use client'
 
 import { Box, Paper, Typography } from '@mui/material'
-import { TypeFilter } from '@/components/molecules/TypeFilter'
+import { TypeFilter } from '@/features/filters/components/TypeFilter'
 import type { AccountType } from '@/types'
 
 export interface FilterPanelProps {
