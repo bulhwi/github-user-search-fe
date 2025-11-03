@@ -113,7 +113,7 @@ const searchSlice = createSlice({
       })
       .addCase(searchUsers.fulfilled, (state, action) => {
         state.loading = 'succeeded'
-        const { items, total_count, page, rateLimit } = action.payload
+        const { items, total_count, page } = action.payload
 
         if (page === 1) {
           state.results = items
