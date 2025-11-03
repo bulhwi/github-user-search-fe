@@ -8,12 +8,9 @@ import searchReducer, {
   SearchState,
 } from './searchSlice'
 import type { GitHubUser, SearchFilters, SortOption } from '@/types'
-import { configureStore } from '@reduxjs/toolkit'
-import { githubApi } from '@/shared/api/github'
 
 // Mock GitHub API
 jest.mock('@/shared/api/github')
-const mockedGithubApi = githubApi as jest.Mocked<typeof githubApi>
 
 describe('searchSlice', () => {
   const initialState: SearchState = {
@@ -175,14 +172,7 @@ describe('searchSlice', () => {
   })
 
   describe('Async Thunks - searchUsers', () => {
-    let store: ReturnType<typeof configureStore>
-
     beforeEach(() => {
-      store = configureStore({
-        reducer: {
-          search: searchReducer,
-        },
-      })
       jest.clearAllMocks()
     })
 

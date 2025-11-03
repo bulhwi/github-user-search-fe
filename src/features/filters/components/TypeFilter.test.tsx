@@ -114,7 +114,7 @@ describe('TypeFilter', () => {
   describe('Edge Cases', () => {
     it('onChange가 제공되지 않아도 렌더링되어야 한다', () => {
       // @ts-expect-error Testing without onChange
-      const { container } = render(<TypeFilter value={null} />)
+      render(<TypeFilter value={null} />)
 
       const select = screen.getByLabelText('Account Type')
       expect(select).toBeInTheDocument()

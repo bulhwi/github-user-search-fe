@@ -16,7 +16,8 @@ import { UserList } from '@/features/results/components/UserList'
  */
 export default function Home() {
   // Application Layer: 검색 로직
-  const { query, results, loading, error, handleSearch } = useSearch()
+  const { query, results, loading, error, pagination, handleSearch, loadMore } =
+    useSearch()
 
   // Application Layer: 필터 로직
   const { filters, setType, setSearchIn } = useFilters()
@@ -45,7 +46,14 @@ export default function Home() {
         </Grid>
 
         <Grid item xs={12} md={9}>
-          <UserList users={results} loading={loading} error={error} />
+          <UserList
+            users={results}
+            loading={loading}
+            error={error}
+            hasMore={pagination.hasMore}
+            onLoadMore={loadMore}
+            totalCount={pagination.totalCount}
+          />
         </Grid>
       </Grid>
     </Container>

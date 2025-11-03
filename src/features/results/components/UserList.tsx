@@ -2,16 +2,29 @@
 
 import { Grid, Typography, Box, CircularProgress } from '@mui/material'
 import { UserCard } from '@/features/results/components/UserCard'
+import { InfiniteScroll } from '@/features/results/components/InfiniteScroll'
 import type { GitHubUser, LoadingState } from '@/types'
 
 export interface UserListProps {
   users: GitHubUser[]
   loading: LoadingState
   error: string | null
+  hasMore?: boolean
+  onLoadMore?: () => void
+  totalCount?: number
   className?: string
 }
 
-export function UserList({ users, loading, error, className }: UserListProps) {
+export function UserList({
+  users,
+  loading,
+  error,
+  hasMore = false,
+  onLoadMore,
+  totalCount,
+  className,
+}: UserListProps) {
+  // 초기 로딩 중 (아직 결과가 없을 때)
   if (loading === 'loading' && users.length === 0) {
     return (
       <Box
@@ -28,6 +41,7 @@ export function UserList({ users, loading, error, className }: UserListProps) {
     )
   }
 
+  // 에러 상태
   if (error) {
     return (
       <Box className={className} sx={{ textAlign: 'center', py: 8 }}>
@@ -41,6 +55,7 @@ export function UserList({ users, loading, error, className }: UserListProps) {
     )
   }
 
+  // 결과 없음
   if (users.length === 0) {
     return (
       <Box className={className} sx={{ textAlign: 'center', py: 8 }}>
@@ -54,18 +69,31 @@ export function UserList({ users, loading, error, className }: UserListProps) {
     )
   }
 
+  // 결과 표시 + 무한 스크롤
   return (
     <Box className={className}>
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Found {users.length} users
+        Found {totalCount !== undefined ? totalCount : users.length} users
+        {totalCount !== undefined &&
+          users.length < totalCount &&
+          ` (showing ${users.length})`}
       </Typography>
-      <Grid container spacing={3}>
-        {users.map((user) => (
-          <Grid item key={user.id} xs={12} sm={6} md={4} lg={3}>
-            <UserCard user={user} />
-          </Grid>
-        ))}
-      </Grid>
+
+      <InfiniteScroll
+        onLoadMore={onLoadMore || (() => {})}
+        hasMore={hasMore}
+        isLoading={loading === 'loading'}
+        loadingMessage="Loading more users..."
+        endMessage="All users loaded"
+      >
+        <Grid container spacing={3}>
+          {users.map((user) => (
+            <Grid item key={user.id} xs={12} sm={6} md={4} lg={3}>
+              <UserCard user={user} />
+            </Grid>
+          ))}
+        </Grid>
+      </InfiniteScroll>
     </Box>
   )
 }

@@ -178,8 +178,6 @@ describe('SearchInFilter', () => {
 
       render(<SearchInFilter value={['login']} onChange={onChange} />)
 
-      const emailCheckbox = screen.getByLabelText('Email')
-
       // Tab으로 포커스 이동 후 Space로 선택
       await user.tab()
       await user.tab()
