@@ -303,6 +303,46 @@ used_prompts.md에 지금까지의 프롬프트들 자동으로 계속 적립해
 
 ---
 
+### 프롬프트 12: Claude Code Hooks 설정 (프롬프트 자동 기록)
+**사용한 도구**: Claude Code
+
+**프롬프트**:
+```
+작업하면서 주고받는 프롬프트를 계속 used_prompts.md에 자동으로 업데이트, 적립하도록 .claude/settings.local.json hooks로 추가해.
+```
+
+**결과**:
+- **.claude/settings.local.json에 UserPromptSubmit Hook 추가**
+  - 사용자가 프롬프트 제출 시 자동으로 타임스탬프 기록
+  - `.claude/prompt_log.txt`에 로그 저장
+  - Hook 형식: 배열 기반 정의 (스키마 준수)
+
+- **.claude/README.md 생성**
+  - Claude Code 설정 가이드 문서화
+  - Hooks 작동 방식 설명
+  - ⚠️ Hook의 한계점 명시:
+    - Hook은 프롬프트 내용에 직접 접근 불가
+    - 타임스탬프만 자동 기록
+    - 실제 프롬프트 내용은 Claude Code가 수동으로 used_prompts.md에 기록
+
+- **.gitignore 업데이트**
+  - `.idea/` 추가 (IntelliJ IDEA 설정 디렉토리)
+  - `.claude/prompt_log.txt` 추가 (로컬 로그 파일)
+
+- **작동 흐름**
+  1. 사용자 프롬프트 제출
+  2. UserPromptSubmit Hook 자동 실행 → 타임스탬프 기록
+  3. Claude Code가 대화 분석 → used_prompts.md에 상세 기록
+  4. Git 커밋 시 prompt_log.txt는 제외 (gitignore)
+
+- **기술적 한계 이해**
+  - Claude Code Hooks API는 프롬프트 내용을 매개변수로 제공하지 않음
+  - 자동화는 타임스탬프 기록까지만 가능
+  - 프롬프트 내용의 상세 기록은 Claude Code의 수동 작업 필요
+  - 이는 Claude Code의 설계상 한계이며, 보안 및 프라이버시를 위한 조치
+
+---
+
 ## 작성 가이드
 
 각 프롬프트 기록은 다음 형식을 따라 작성합니다:

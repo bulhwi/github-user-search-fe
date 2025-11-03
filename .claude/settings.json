@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh issue create:*)",
+      "Bash(pnpm install:*)"
+    ],
+    "deny": [],
+    "ask": []
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "date '+[프롬프트 제출] %Y-%m-%d %H:%M:%S - used_prompts.md 업데이트 필요' >> .claude/prompt_log.txt && echo '✓ 프롬프트 기록됨'"
+          }
+        ]
+      }
+    ]
+  }
+}
