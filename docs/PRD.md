@@ -32,7 +32,7 @@ GitHub REST API를 활용하여 사용자를 검색하고, 다양한 필터 조�
 - **Language**: TypeScript (ES2023)
 - **UI Library**: Material-UI (MUI) v6
 - **Styling**: Tailwind CSS v3
-- **State Management**: React Query + Context API
+- **State Management**: Redux Toolkit
 - **HTTP Client**: Native Fetch API
 - **Design Pattern**: Atomic Design
 
@@ -142,7 +142,7 @@ github-user-search-fe/
 │   │   │       └── route.ts
 │   │   ├── layout.tsx         # 루트 레이아웃
 │   │   ├── page.tsx           # 홈 페이지
-│   │   ├── providers.tsx      # React Query + MUI Provider
+│   │   ├── providers.tsx      # Redux Provider + MUI Provider
 │   │   └── globals.css
 │   │
 │   ├── components/            # Atomic Design 컴포넌트
@@ -168,15 +168,14 @@ github-user-search-fe/
 │   │   └── pages/            # 완전한 페이지
 │   │       └── HomePage/
 │   │
-│   ├── contexts/             # React Context API
-│   │   ├── SearchContext.tsx
-│   │   ├── FilterContext.tsx
-│   │   └── ThemeContext.tsx
+│   ├── store/                # Redux Store
+│   │   ├── index.ts         # Store Configuration
+│   │   ├── hooks.ts         # Typed Hooks (useAppDispatch, useAppSelector)
+│   │   └── slices/
+│   │       ├── searchSlice.ts
+│   │       └── uiSlice.ts
 │   │
 │   ├── hooks/                # Custom Hooks
-│   │   ├── queries/         # React Query Hooks
-│   │   │   ├── useSearchUsers.ts
-│   │   │   └── useRateLimit.ts
 │   │   ├── useDebounce.ts
 │   │   ├── useInfiniteScroll.ts
 │   │   └── useMediaQuery.ts
@@ -211,9 +210,9 @@ github-user-search-fe/
 ```
 User Input (검색어 + 필터)
     ↓
-Context API (SearchContext) - 상태 업데이트
+Redux Action Dispatch (setQuery, setFilters)
     ↓
-React Query Hook (useSearchUsers) - API 호출
+Redux Thunk (searchUsers) - API 호출
     ↓
 Server Route API Call (/api/search)
     ↓
@@ -221,25 +220,25 @@ GitHub REST API (with Auth Token)
     ↓
 Response + Rate Limit Info
     ↓
-React Query Cache Update - 자동 캐싱
+Redux Store Update (Reducer) - 상태 업데이트
     ↓
-React Component Re-render
+React Component Re-render (useSelector)
     ↓
 User Sees Results
 ```
 
 ### 4.4 State Management
 
-#### 4.4.1 React Query
-- **서버 상태 관리**: GitHub API 데이터 캐싱 및 동기화
-- **자동 리패칭**: 윈도우 포커스, 네트워크 재연결 시
-- **Optimistic Updates**: 사용자 경험 개선
-- **무한 스크롤**: useInfiniteQuery 사용
+#### 4.4.1 Redux Toolkit
+- **전역 상태 관리**: Redux Store를 통한 중앙 집중식 상태 관리
+- **Slice 기반 구조**: 기능별 Slice 분리 (search, ui)
+- **RTK Query**: 서버 상태 캐싱 및 동기화 (선택사항)
+- **Redux Thunk**: 비동기 작업 처리 (API 호출)
+- **Immer 통합**: 불변성 자동 관리
 
-#### 4.4.2 Context API
-- **SearchContext**: 검색 쿼리, 필터 상태
-- **FilterContext**: 필터 UI 상태
-- **ThemeContext**: 다크모드 상태 (시스템 연동)
+#### 4.4.2 State 구조
+- **searchSlice**: 검색 쿼리, 필터, 결과, 페이징 상태
+- **uiSlice**: 다크모드, Rate Limit, Toast 알림 상태
 
 ---
 
@@ -402,11 +401,11 @@ Accept: application/vnd.github.v3+json
 - [x] 프로젝트 초기화
 - [x] 설정 파일 작성
 - [x] 디렉토리 구조 생성 (Atomic Design)
-- [x] React Query + Context API 설정
+- [x] Redux Toolkit 설정
 - [ ] 타입 정의
 - [ ] GitHub API 클라이언트
+- [ ] Redux Slices 구현
 - [ ] 검색 기능 (기본)
-- [ ] Context 설정
 
 ### Day 2: UI/UX + 고급 기능
 - [ ] 검색 UI 컴포넌트
@@ -493,7 +492,8 @@ Accept: application/vnd.github.v3+json
 | 버전 | 날짜 | 작성자 | 변경 내용 |
 |------|------|--------|-----------|
 | 1.0.0 | 2025-11-03 | Claude Code | 초기 작성 |
-| 1.1.0 | 2025-11-03 | Claude Code | 아키텍처 변경: Redux Toolkit → React Query + Context API, Clean Architecture → Atomic Design Pattern |
+| 2.0.0 | 2025-11-03 | Claude Code | 아키텍처 변경: Clean Architecture → Atomic Design Pattern, HTTP Client: Native Fetch API |
+| 3.0.0 | 2025-11-03 | Claude Code | PDF 요구사항 준수: Redux Toolkit으로 회귀, React Query 제거 |
 
 ---
 

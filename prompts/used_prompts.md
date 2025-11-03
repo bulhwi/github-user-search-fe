@@ -192,6 +192,60 @@ axios 제거해
 
 ---
 
+### 프롬프트 9: PDF 요구사항 준수를 위한 Redux Toolkit 회귀
+**사용한 도구**: Claude Code
+
+**프롬프트**:
+```
+좋아, 작업진행전 기반작업은 끝난거 같은데 시작전에 prd, pdf, 테크스펙 등을 다시 분석 비교해서 놓친게 있는지, pdf에서의 요구사항과 다른게 있는지 다시 체크해보자
+→ 원본데로 1번으로 진행하자. used_prompts.md도 업데이트 자동으로 계속 해
+```
+
+**결과**:
+- 📋 **PDF vs PRD/Tech Spec 비교 분석 완료**
+  - PDF 원본은 "Redux Toolkit" 명시적 요구
+  - 현재 코드: React Query + Context API로 구현되어 있음 (불일치 발견)
+  - Technical Specification: Redux 기반으로 작성되어 있으나 실제 코드와 불일치
+
+- 🔄 **PDF 요구사항 준수를 위한 아키텍처 복원**
+  - package.json 수정
+    - React Query (@tanstack/react-query, react-query-devtools) 제거
+    - @reduxjs/toolkit@2.9.2 추가
+    - react-redux@9.2.0 추가
+  - pnpm install 실행 (의존성 재구성 완료)
+
+- 📝 **providers.tsx 수정**
+  - QueryClientProvider → Redux Provider로 변경
+  - React Query DevTools 제거
+  - Redux Store import 추가 (@/store)
+
+- 📄 **docs/PRD.md 전면 업데이트 (v3.0.0)**
+  - 상태 관리: React Query + Context API → Redux Toolkit
+  - 데이터 플로우: Redux Action Dispatch → Redux Thunk → Redux Store Update
+  - State Management 섹션: Redux Toolkit 중심으로 재작성
+  - 디렉토리 구조: contexts/ 제거, store/ 추가
+  - hooks/queries/ 제거
+  - Day 1 체크리스트: Redux Toolkit 설정으로 변경
+  - 변경 이력: v3.0.0 추가 (PDF 요구사항 준수)
+
+- 📘 **docs/TECHNICAL_SPECIFICATION.md 업데이트 (v3.0.0)**
+  - 버전: v3.0.0으로 업데이트
+  - 상단 경고 메시지 수정: Redux Toolkit 기반 강조
+  - 기술적 목표: React Query → Redux Toolkit 설명
+  - State Management 섹션: Redux Toolkit 2.9.2, react-redux 9.2.0 명시
+  - 최적화 전략: React Query → Redux Thunk + Manual Cache
+  - 변경 이력: v3.0.0 추가
+
+- ✅ **아키텍처 정렬 완료**
+  - PDF 요구사항 ✓
+  - PRD.md ✓
+  - Technical Specification ✓
+  - 실제 코드 (providers.tsx) ✓
+  - package.json ✓
+  - 모든 문서와 코드가 Redux Toolkit 기반으로 통일됨
+
+---
+
 ## 작성 가이드
 
 각 프롬프트 기록은 다음 형식을 따라 작성합니다:

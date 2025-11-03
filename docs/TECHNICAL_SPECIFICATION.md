@@ -1,19 +1,18 @@
 # Technical Specification
 # GitHub User Search Application
 
-**버전**: 2.0.0
+**버전**: 3.0.0
 **작성일**: 2025-11-03
 **최종 수정**: 2025-11-03
 **상태**: Draft
 
-> **⚠️ 중요 업데이트 (v2.0.0)**
+> **📋 아키텍처 개요 (v3.0.0)**
 >
-> 아키텍처가 다음과 같이 변경되었습니다:
-> - **상태 관리**: ~~Redux Toolkit~~ → **React Query + Context API**
-> - **디자인 패턴**: ~~Clean Architecture~~ → **Atomic Design Pattern**
-> - **HTTP Client**: Native Fetch API 사용
->
-> 이 문서는 새로운 아키텍처 기준으로 업데이트되었습니다.
+> PDF 요구사항에 따라 다음 기술 스택을 사용합니다:
+> - **상태 관리**: **Redux Toolkit**
+> - **디자인 패턴**: **Atomic Design Pattern**
+> - **HTTP Client**: Native Fetch API
+> - **테스트**: Jest + Cypress
 
 ---
 
@@ -46,7 +45,7 @@ GitHub REST API를 활용한 사용자 검색 웹 애플리케이션의 기술 �
 - **유지보수성**: TypeScript strict mode, 명확한 타입 정의
 - **테스트 커버리지**: 핵심 로직 100% 커버
 - **접근성**: WCAG 2.1 AA 준수
-- **상태 관리**: React Query로 서버 상태와 클라이언트 상태 명확히 분리
+- **상태 관리**: Redux Toolkit을 통한 예측 가능한 전역 상태 관리
 
 ---
 
@@ -64,9 +63,9 @@ GitHub REST API를 활용한 사용자 검색 웹 애플리케이션의 기술 �
 
 | 기술 | 버전 | 용도 |
 |------|------|------|
-| @tanstack/react-query | 5.90.6 | Server State Management & Caching |
-| @tanstack/react-query-devtools | 5.90.2 | React Query DevTools |
-| React Context API | Built-in | Client State Management |
+| @reduxjs/toolkit | 2.9.2 | Global State Management |
+| react-redux | 9.2.0 | React Bindings for Redux |
+| Redux Thunk | Built-in (RTK) | Async Logic Middleware |
 | Fetch API | Native | HTTP Client |
 
 ### 2.3 UI/Styling
@@ -1260,7 +1259,7 @@ export function UserAvatar({ src, alt, size = 48 }: UserAvatarProps) {
 | **번들 크기** | Code Splitting | Next.js Dynamic Import |
 | **이미지 최적화** | Lazy Loading, WebP | next/image, Canvas |
 | **렌더링 최적화** | Memoization | React.memo, useMemo |
-| **네트워크** | Request Deduplication | SWR, React Query (optional) |
+| **네트워크** | Request Caching | Redux Thunk + Manual Cache |
 | **상태 관리** | Selective Re-rendering | Redux Toolkit, Reselect |
 
 ### 10.2 Debounced Search
@@ -1457,8 +1456,8 @@ NEXT_PUBLIC_APP_URL=https://your-app.vercel.app
 | 버전 | 날짜 | 작성자 | 변경 내용 |
 |------|------|--------|-----------|
 | 1.0.0 | 2025-11-03 | Claude Code | 초기 작성 |
-| 2.0.0 | 2025-11-03 | Claude Code | 아키텍처 대규모 변경: Redux Toolkit → React Query + Context API, Clean Architecture → Atomic Design Pattern |
-| 2.1.0 | 2025-11-03 | Claude Code | HTTP Client 변경: Axios 제거, Native Fetch API 사용 |
+| 2.0.0 | 2025-11-03 | Claude Code | 아키텍처 변경: Clean Architecture → Atomic Design Pattern, HTTP Client: Native Fetch API |
+| 3.0.0 | 2025-11-03 | Claude Code | PDF 요구사항 준수: Redux Toolkit 기반 아키텍처로 확정, React Query 제거 |
 
 ---
 
