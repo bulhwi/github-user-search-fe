@@ -110,7 +110,7 @@ describe('searchSlice', () => {
           language: 'TypeScript',
           repos: { min: 10, max: 100 },
           followers: { min: 1000 },
-          created: { from: '2020-01-01' },
+          created: { after: '2020-01-01' },
           sponsorable: true,
         },
       }
