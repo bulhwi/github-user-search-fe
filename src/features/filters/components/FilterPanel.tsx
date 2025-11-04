@@ -8,6 +8,7 @@ import { LocationFilter } from '@/features/filters/components/LocationFilter'
 import { LanguageFilter } from '@/features/filters/components/LanguageFilter'
 import { DateRangeFilter } from '@/features/filters/components/DateRangeFilter'
 import { FollowersFilter } from '@/features/filters/components/FollowersFilter'
+import { SponsorableFilter } from '@/features/filters/components/SponsorableFilter'
 import type { AccountType, SearchInField, RangeFilter, DateRangeFilter as DateRangeFilterType } from '@/types'
 
 export interface FilterPanelProps {
@@ -25,6 +26,8 @@ export interface FilterPanelProps {
   onCreatedChange: (created: DateRangeFilterType) => void
   followers: RangeFilter
   onFollowersChange: (followers: RangeFilter) => void
+  sponsorable: boolean
+  onSponsorableChange: (sponsorable: boolean) => void
   className?: string
 }
 
@@ -43,6 +46,8 @@ export function FilterPanel({
   onCreatedChange,
   followers,
   onFollowersChange,
+  sponsorable,
+  onSponsorableChange,
   className,
 }: FilterPanelProps) {
   return (
@@ -58,7 +63,7 @@ export function FilterPanel({
         <LocationFilter value={location} onChange={onLocationChange} />
         <LanguageFilter value={language} onChange={onLanguageChange} />
         <DateRangeFilter value={created} onChange={onCreatedChange} />
-        {/* 추가 필터들이 여기에 들어갈 예정 (Feature #8) */}
+        <SponsorableFilter value={sponsorable} onChange={onSponsorableChange} />
       </Box>
     </Paper>
   )

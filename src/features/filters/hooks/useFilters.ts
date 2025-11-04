@@ -95,6 +95,15 @@ export function useFilters() {
     [dispatch, query]
   )
 
+  // 후원 가능 여부 필터 변경 (Feature #8)
+  const setSponsorable = useCallback(
+    (sponsorable: boolean) => {
+      dispatch(setFilters({ sponsorable }))
+      dispatch(searchUsers({ query, page: 1 }))
+    },
+    [dispatch, query]
+  )
+
   return {
     filters,
     setType,
@@ -104,5 +113,6 @@ export function useFilters() {
     setRepos,
     setCreated,
     setFollowers,
+    setSponsorable,
   }
 }

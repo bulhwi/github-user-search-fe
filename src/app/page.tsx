@@ -20,7 +20,7 @@ export default function Home() {
     useSearch()
 
   // Application Layer: 필터 로직
-  const { filters, setType, setSearchIn, setRepos, setLocation, setLanguage, setCreated, setFollowers } =
+  const { filters, setType, setSearchIn, setRepos, setLocation, setLanguage, setCreated, setFollowers, setSponsorable } =
     useFilters()
 
   return (
@@ -53,6 +53,8 @@ export default function Home() {
             onCreatedChange={setCreated}
             followers={filters.followers}
             onFollowersChange={setFollowers}
+            sponsorable={filters.sponsorable}
+            onSponsorableChange={setSponsorable}
           />
         </Grid>
 

@@ -716,4 +716,106 @@ describe('필터 플로우 테스트', () => {
         .and('include', 'followers:100..1000')
     })
   })
+
+  describe('SponsorableFilter (후원 가능 여부) 변경', () => {
+    it('Sponsorable 필터가 표시되어야 한다', () => {
+      cy.contains('Sponsorable only').should('be.visible')
+    })
+
+    it('기본값은 OFF여야 한다', () => {
+      cy.contains('Sponsorable only').find('input[type="checkbox"]').should('not.be.checked')
+    })
+
+    it('스위치를 켤 수 있어야 한다', () => {
+      cy.contains('Sponsorable only').find('input[type="checkbox"]').check()
+      cy.wait('@searchAPI')
+
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('include', 'is:sponsorable')
+    })
+
+    it('스위치를 끌 수 있어야 한다', () => {
+      // 먼저 켜기
+      cy.contains('Sponsorable only').find('input[type="checkbox"]').check()
+      cy.wait('@searchAPI')
+
+      // 다시 끄기
+      cy.contains('Sponsorable only').find('input[type="checkbox"]').uncheck()
+      cy.wait('@searchAPI')
+
+      // is:sponsorable 파라미터가 없어야 함
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('not.include', 'is:sponsorable')
+    })
+
+    it('여러 번 토글할 수 있어야 한다', () => {
+      const switchElement = () => cy.contains('Sponsorable only').find('input[type="checkbox"]')
+
+      // ON
+      switchElement().check()
+      cy.wait('@searchAPI')
+
+      // OFF
+      switchElement().uncheck()
+      cy.wait('@searchAPI')
+
+      // ON
+      switchElement().check()
+      cy.wait('@searchAPI')
+
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('include', 'is:sponsorable')
+    })
+
+    it('다른 필터와 함께 사용할 수 있어야 한다', () => {
+      // Type 필터 변경
+      cy.get('[data-testid="type-filter"]').click()
+      cy.contains('li', 'User').click()
+      cy.wait('@searchAPI')
+
+      // Sponsorable 필터 켜기
+      cy.contains('Sponsorable only').find('input[type="checkbox"]').check()
+      cy.wait('@searchAPI')
+
+      // 두 필터 모두 적용 확인
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('include', 'type:user')
+        .and('include', 'is:sponsorable')
+    })
+
+    it('복잡한 필터 조합에서 사용할 수 있어야 한다', () => {
+      // Type 필터
+      cy.get('[data-testid="type-filter"]').click()
+      cy.contains('li', 'User').click()
+      cy.wait('@searchAPI')
+
+      // Repos 필터
+      cy.get('#repos-min').type('10')
+      cy.wait('@searchAPI')
+
+      // Followers 필터
+      cy.get('#followers-min').type('100')
+      cy.wait('@searchAPI')
+
+      // Sponsorable 필터
+      cy.contains('Sponsorable only').find('input[type="checkbox"]').check()
+      cy.wait('@searchAPI')
+
+      // 모든 필터 확인
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('include', 'type:user')
+        .and('include', 'repos:>=10')
+        .and('include', 'followers:>=100')
+        .and('include', 'is:sponsorable')
+    })
+
+    it('도움말 텍스트가 표시되어야 한다', () => {
+      cy.contains('Show only sponsorable users').should('be.visible')
+    })
+  })
 })
