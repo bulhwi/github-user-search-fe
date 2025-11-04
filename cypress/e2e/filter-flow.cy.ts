@@ -402,4 +402,98 @@ describe('필터 플로우 테스트', () => {
         .and('include', 'location:Seoul')
     })
   })
+
+  describe('LanguageFilter 변경', () => {
+    it('Language 필터가 표시되어야 한다', () => {
+      cy.contains('Language').should('be.visible')
+    })
+
+    it('Language 입력 필드가 표시되어야 한다', () => {
+      cy.get('input[placeholder*="JavaScript"]').should('be.visible')
+    })
+
+    it('언어를 입력할 수 있어야 한다', () => {
+      cy.get('input[placeholder*="JavaScript"]').type('Python')
+      cy.get('input[placeholder*="JavaScript"]').should('have.value', 'Python')
+    })
+
+    it('언어 입력 시 검색이 실행되어야 한다', () => {
+      cy.get('input[placeholder*="JavaScript"]').type('Python')
+      cy.wait('@searchAPI')
+
+      // language 파라미터 확인
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('include', 'language:Python')
+    })
+
+    it('인기 언어 목록에서 선택할 수 있어야 한다', () => {
+      // Autocomplete 열기
+      cy.get('input[placeholder*="JavaScript"]').click()
+
+      // JavaScript 선택
+      cy.contains('li', 'JavaScript').click()
+      cy.wait('@searchAPI')
+
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('include', 'language:JavaScript')
+    })
+
+    it('언어를 변경할 수 있어야 한다', () => {
+      // 첫 번째 언어 입력
+      cy.get('input[placeholder*="JavaScript"]').type('Python')
+      cy.wait('@searchAPI')
+
+      // 언어 변경
+      cy.get('input[placeholder*="JavaScript"]').clear().type('TypeScript')
+      cy.wait('@searchAPI')
+
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('include', 'language:TypeScript')
+    })
+
+    it('언어를 지울 수 있어야 한다', () => {
+      // 언어 입력
+      cy.get('input[placeholder*="JavaScript"]').type('Python')
+      cy.wait('@searchAPI')
+
+      // 언어 삭제
+      cy.get('input[placeholder*="JavaScript"]').clear()
+      cy.wait('@searchAPI')
+
+      // language 파라미터가 없어야 함
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('not.include', 'language:')
+    })
+
+    it('대소문자 구분 없이 검색되어야 한다', () => {
+      cy.get('input[placeholder*="JavaScript"]').type('javascript')
+      cy.wait('@searchAPI')
+
+      // GitHub API는 대소문자 구분 없음
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('include', 'language:javascript')
+    })
+
+    it('다른 필터와 함께 사용할 수 있어야 한다', () => {
+      // Type 필터 변경
+      cy.get('[data-testid="type-filter"]').click()
+      cy.contains('li', 'User').click()
+      cy.wait('@searchAPI')
+
+      // Language 필터 추가
+      cy.get('input[placeholder*="JavaScript"]').type('Python')
+      cy.wait('@searchAPI')
+
+      // 두 필터 모두 적용 확인
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('include', 'type:user')
+        .and('include', 'language:Python')
+    })
+  })
 })

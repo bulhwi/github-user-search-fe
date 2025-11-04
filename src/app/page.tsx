@@ -20,7 +20,8 @@ export default function Home() {
     useSearch()
 
   // Application Layer: 필터 로직
-  const { filters, setType, setSearchIn, setRepos, setLocation } = useFilters()
+  const { filters, setType, setSearchIn, setRepos, setLocation, setLanguage } =
+    useFilters()
 
   return (
     <Container maxWidth="xl" className="py-8">
@@ -46,6 +47,8 @@ export default function Home() {
             onReposChange={setRepos}
             location={filters.location}
             onLocationChange={setLocation}
+            language={filters.language}
+            onLanguageChange={setLanguage}
           />
         </Grid>
 
