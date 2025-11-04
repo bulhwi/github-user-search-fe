@@ -3092,3 +3092,170 @@ git commit -m "feat: implement language filter with Autocomplete"
 ```
 
 ---
+
+### 프롬프트 30: Feature #7 구현 (팔로워 수 필터)
+**사용한 도구**: Claude Code
+**날짜**: 2025-11-04
+
+**프롬프트**:
+```
+7번 진행해보자
+```
+
+**배경**:
+- Issue #7: 팔로워 수 필터 기능 구현
+- GitHub API Qualifiers: `followers:>=n`, `followers:<=n`, `followers:n..m`
+- ReposFilter와 동일한 RangeFilter 패턴 재사용
+
+**구현 작업**:
+
+1. **타입 정의 확인**
+   ```typescript
+   // src/types/search.ts (이미 정의됨)
+   interface SearchFilters {
+     followers: RangeFilter // Feature #3에서 정의된 타입 재사용
+   }
+   ```
+
+2. **Query Builder 확인**
+   ```typescript
+   // src/features/search/utils/queryBuilder.ts (이미 구현됨)
+   followers(min?: number, max?: number): this {
+     if (min !== undefined && max !== undefined) {
+       this.qualifiers.push(`followers:${min}..${max}`)
+     } else if (min !== undefined) {
+       this.qualifiers.push(`followers:>=${min}`)
+     } else if (max !== undefined) {
+       this.qualifiers.push(`followers:<=${max}`)
+     }
+     return this
+   }
+   ```
+
+3. **FollowersFilter 컴포넌트 구현** (TDD)
+   ```typescript
+   // src/features/filters/components/FollowersFilter.tsx
+   - ReposFilter와 거의 동일한 구조
+   - Min/Max 입력 필드
+   - 유효성 검증: min ≤ max
+   - FormControl + TextField 사용
+   ```
+
+4. **단위 테스트 작성**
+   ```typescript
+   // src/features/filters/components/FollowersFilter.test.tsx
+   - ControlledFollowersFilter 헬퍼 컴포넌트
+   - 렌더링 테스트 (5개)
+   - 사용자 상호작용 테스트 (4개)
+   - 유효성 검증 테스트 (5개)
+   - Edge Cases (3개)
+   - 접근성 테스트 (3개)
+   - 총 20개 테스트
+   ```
+
+5. **Redux & Hook 통합**
+   ```typescript
+   // src/features/filters/hooks/useFilters.ts
+   const setFollowers = useCallback(
+     (followers: RangeFilter) => {
+       dispatch(setFilters({ followers }))
+       dispatch(searchUsers({ query, page: 1 }))
+     },
+     [dispatch, query]
+   )
+   ```
+
+6. **FilterPanel 통합**
+   ```typescript
+   // src/features/filters/components/FilterPanel.tsx
+   - FollowersFilter import
+   - Props 타입 확장 (followers, onFollowersChange)
+   - ReposFilter 다음에 배치
+   ```
+
+7. **Page 통합**
+   ```typescript
+   // src/app/page.tsx
+   - useFilters에서 setFollowers 가져오기
+   - FilterPanel에 followers, setFollowers 전달
+   ```
+
+8. **E2E 테스트 추가**
+   ```typescript
+   // cypress/e2e/filter-flow.cy.ts
+   - FollowersFilter 표시 확인
+   - min 값만 설정
+   - max 값만 설정
+   - min과 max 모두 설정
+   - 값 지우기
+   - 다른 필터와 함께 사용
+   - 복잡한 범위 검색
+   - 여러 필터 조합
+   - 총 8개 시나리오 추가
+   ```
+
+**테스트 결과**:
+```bash
+# 단위 테스트
+✅ 296 tests passed (276 → 296, +20)
+  - FollowersFilter: 20 tests
+  - 기존 테스트: 276 tests
+
+# TypeScript
+✅ pnpm tsc: 컴파일 성공
+
+# Production Build
+✅ pnpm build: 빌드 성공
+  - First Load JS: 245 kB (변화 없음)
+  - ReposFilter와 동일한 구조로 추가 번들 크기 없음
+```
+
+**E2E 테스트**:
+- 94 → 102 시나리오 (+8 scenarios)
+- FollowersFilter 기능 검증
+- 다른 필터와의 통합 검증
+
+**기술적 결정**:
+
+1. **RangeFilter 타입 재사용**
+   - Feature #3(ReposFilter)에서 정의한 타입 재사용
+   - 일관된 인터페이스로 유지보수성 향상
+   - DRY 원칙 준수
+
+2. **ReposFilter 패턴 복제**
+   - 동일한 UI/UX 제공
+   - 코드 일관성 유지
+   - 개발 속도 향상
+
+3. **유효성 검증**
+   - min ≤ max 검증
+   - 음수 입력 방지 (min: 0 속성)
+   - 에러 상태 표시
+
+4. **테스트 패턴**
+   - ControlledComponent 패턴으로 테스트
+   - userEvent.type()의 각 문자 입력 처리
+   - Helper functions (getMinInput, getMaxInput)
+
+**Issue 완료**:
+- ✅ Issue #7 Closed
+
+**개선 사항**:
+- 팔로워 수 기반 정밀한 사용자 검색
+- ReposFilter와 일관된 사용자 경험
+- 범위 검색으로 유연한 필터링
+
+**파일 변경 사항**:
+```
+추가:
+- src/features/filters/components/FollowersFilter.tsx
+- src/features/filters/components/FollowersFilter.test.tsx
+
+수정:
+- src/features/filters/hooks/useFilters.ts (setFollowers 시그니처 변경)
+- src/features/filters/components/FilterPanel.tsx (FollowersFilter 통합)
+- src/app/page.tsx (setFollowers 연결)
+- cypress/e2e/filter-flow.cy.ts (+8 scenarios)
+```
+
+---

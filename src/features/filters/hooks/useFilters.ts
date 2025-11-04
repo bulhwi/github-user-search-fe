@@ -86,10 +86,10 @@ export function useFilters() {
     [dispatch, query]
   )
 
-  // 팔로워 수 필터 변경 (Feature #7 - Future)
+  // 팔로워 수 필터 변경 (Feature #7)
   const setFollowers = useCallback(
-    (min?: number, max?: number) => {
-      dispatch(setFilters({ followers: { min, max } }))
+    (followers: RangeFilter) => {
+      dispatch(setFilters({ followers }))
       dispatch(searchUsers({ query, page: 1 }))
     },
     [dispatch, query]

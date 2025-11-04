@@ -608,4 +608,112 @@ describe('필터 플로우 테스트', () => {
         .and('include', 'created:>2020-01-01')
     })
   })
+
+  describe('FollowersFilter (팔로워 수) 변경', () => {
+    it('FollowersFilter가 표시되어야 한다', () => {
+      cy.contains('Followers Count').should('be.visible')
+      cy.get('#followers-min').should('be.visible')
+      cy.get('#followers-max').should('be.visible')
+    })
+
+    it('min 값만 설정할 수 있어야 한다', () => {
+      cy.get('#followers-min').type('100')
+      cy.wait('@searchAPI')
+
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('include', 'followers:>=100')
+    })
+
+    it('max 값만 설정할 수 있어야 한다', () => {
+      cy.get('#followers-max').type('1000')
+      cy.wait('@searchAPI')
+
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('include', 'followers:<=1000')
+    })
+
+    it('min과 max를 모두 설정할 수 있어야 한다', () => {
+      cy.get('#followers-min').type('100')
+      cy.wait('@searchAPI')
+
+      cy.get('#followers-max').type('1000')
+      cy.wait('@searchAPI')
+
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('include', 'followers:100..1000')
+    })
+
+    it('값을 지울 수 있어야 한다', () => {
+      // 값 입력
+      cy.get('#followers-min').type('100')
+      cy.wait('@searchAPI')
+
+      // 값 삭제
+      cy.get('#followers-min').clear()
+      cy.wait('@searchAPI')
+
+      // followers 파라미터가 없어야 함
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('not.include', 'followers:')
+    })
+
+    it('다른 필터와 함께 사용할 수 있어야 한다', () => {
+      // Type 필터 변경
+      cy.get('[data-testid="type-filter"]').click()
+      cy.contains('li', 'User').click()
+      cy.wait('@searchAPI')
+
+      // Followers 필터 추가
+      cy.get('#followers-min').type('100')
+      cy.wait('@searchAPI')
+
+      // 두 필터 모두 적용 확인
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('include', 'type:user')
+        .and('include', 'followers:>=100')
+    })
+
+    it('복잡한 팔로워 범위로 검색할 수 있어야 한다', () => {
+      cy.get('#followers-min').type('1000')
+      cy.wait('@searchAPI')
+
+      cy.get('#followers-max').type('10000')
+      cy.wait('@searchAPI')
+
+      // 범위 확인
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('include', 'followers:1000..10000')
+    })
+
+    it('여러 필터와 함께 조합할 수 있어야 한다', () => {
+      // Type 필터
+      cy.get('[data-testid="type-filter"]').click()
+      cy.contains('li', 'User').click()
+      cy.wait('@searchAPI')
+
+      // Repos 필터
+      cy.get('#repos-min').type('10')
+      cy.wait('@searchAPI')
+
+      // Followers 필터
+      cy.get('#followers-min').type('100')
+      cy.wait('@searchAPI')
+
+      cy.get('#followers-max').type('1000')
+      cy.wait('@searchAPI')
+
+      // 모든 필터 확인
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('include', 'type:user')
+        .and('include', 'repos:>=10')
+        .and('include', 'followers:100..1000')
+    })
+  })
 })
