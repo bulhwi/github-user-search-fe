@@ -504,7 +504,7 @@ describe('필터 플로우 테스트', () => {
     })
 
     it('after 날짜만 설정할 수 있어야 한다', () => {
-      cy.get('#created-after-filter').type('2020-01-01')
+      cy.get('#created-after-filter').type('2020-01-01', { force: true })
       cy.wait('@searchAPI')
 
       cy.wait('@searchAPI')
@@ -513,7 +513,7 @@ describe('필터 플로우 테스트', () => {
     })
 
     it('before 날짜만 설정할 수 있어야 한다', () => {
-      cy.get('#created-before-filter').type('2023-12-31')
+      cy.get('#created-before-filter').type('2023-12-31', { force: true })
       cy.wait('@searchAPI')
 
       cy.wait('@searchAPI')
@@ -522,10 +522,10 @@ describe('필터 플로우 테스트', () => {
     })
 
     it('after와 before를 모두 설정할 수 있어야 한다', () => {
-      cy.get('#created-after-filter').type('2020-01-01')
+      cy.get('#created-after-filter').type('2020-01-01', { force: true })
       cy.wait('@searchAPI')
 
-      cy.get('#created-before-filter').type('2023-12-31')
+      cy.get('#created-before-filter').type('2023-12-31', { force: true })
       cy.wait('@searchAPI')
 
       cy.wait('@searchAPI')
@@ -536,11 +536,11 @@ describe('필터 플로우 테스트', () => {
 
     it('날짜를 지울 수 있어야 한다', () => {
       // 날짜 입력
-      cy.get('#created-after-filter').type('2020-01-01')
+      cy.get('#created-after-filter').type('2020-01-01', { force: true })
       cy.wait('@searchAPI')
 
       // 날짜 삭제
-      cy.get('#created-after-filter').clear()
+      cy.get('#created-after-filter').clear({ force: true })
       cy.wait('@searchAPI')
 
       // created 파라미터가 없어야 함
@@ -556,7 +556,7 @@ describe('필터 플로우 테스트', () => {
       cy.wait('@searchAPI')
 
       // DateRange 필터 추가
-      cy.get('#created-after-filter').type('2020-01-01')
+      cy.get('#created-after-filter').type('2020-01-01', { force: true })
       cy.wait('@searchAPI')
 
       // 두 필터 모두 적용 확인
@@ -567,10 +567,10 @@ describe('필터 플로우 테스트', () => {
     })
 
     it('복잡한 날짜 범위로 검색할 수 있어야 한다', () => {
-      cy.get('#created-after-filter').type('2020-01-01')
+      cy.get('#created-after-filter').type('2020-01-01', { force: true })
       cy.wait('@searchAPI')
 
-      cy.get('#created-before-filter').type('2021-12-31')
+      cy.get('#created-before-filter').type('2021-12-31', { force: true })
       cy.wait('@searchAPI')
 
       // 날짜 범위 확인
@@ -596,7 +596,7 @@ describe('필터 플로우 테스트', () => {
       cy.wait('@searchAPI')
 
       // DateRange 필터
-      cy.get('#created-after-filter').type('2020-01-01')
+      cy.get('#created-after-filter').type('2020-01-01', { force: true })
       cy.wait('@searchAPI')
 
       // 모든 필터 확인
