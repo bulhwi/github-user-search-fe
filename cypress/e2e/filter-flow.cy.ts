@@ -317,4 +317,89 @@ describe('필터 플로우 테스트', () => {
       cy.contains('2 results').should('be.visible')
     })
   })
+
+  describe('LocationFilter 변경', () => {
+    it('Location 필터가 표시되어야 한다', () => {
+      cy.contains('Location').should('be.visible')
+    })
+
+    it('Location 입력 필드가 표시되어야 한다', () => {
+      cy.get('input[placeholder*="Seoul"]').should('be.visible')
+    })
+
+    it('위치를 입력할 수 있어야 한다', () => {
+      cy.get('input[placeholder*="Seoul"]').type('Seoul')
+      cy.get('input[placeholder*="Seoul"]').should('have.value', 'Seoul')
+    })
+
+    it('위치 입력 시 검색이 실행되어야 한다 (debounced)', () => {
+      cy.get('input[placeholder*="Seoul"]').type('Seoul')
+
+      // Debounce (500ms) 대기
+      cy.wait(600)
+      cy.wait('@searchAPI')
+
+      // location 파라미터 확인
+      cy.wait('@searchAPI').its('request.url').should('include', 'location:Seoul')
+    })
+
+    it('공백이 포함된 위치를 입력할 수 있어야 한다', () => {
+      cy.get('input[placeholder*="Seoul"]').type('San Francisco')
+
+      cy.wait(600)
+      cy.wait('@searchAPI')
+
+      // 공백 포함 시 따옴표 처리 확인
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('include', 'location:%22San%20Francisco%22')
+    })
+
+    it('위치를 변경할 수 있어야 한다', () => {
+      // 첫 번째 위치 입력
+      cy.get('input[placeholder*="Seoul"]').type('Seoul')
+      cy.wait(600)
+      cy.wait('@searchAPI')
+
+      // 위치 변경
+      cy.get('input[placeholder*="Seoul"]').clear().type('Tokyo')
+      cy.wait(600)
+      cy.wait('@searchAPI')
+
+      cy.wait('@searchAPI').its('request.url').should('include', 'location:Tokyo')
+    })
+
+    it('위치를 지울 수 있어야 한다', () => {
+      // 위치 입력
+      cy.get('input[placeholder*="Seoul"]').type('Seoul')
+      cy.wait(600)
+      cy.wait('@searchAPI')
+
+      // 위치 삭제
+      cy.get('input[placeholder*="Seoul"]').clear()
+      cy.wait(600)
+      cy.wait('@searchAPI')
+
+      // location 파라미터가 없어야 함
+      cy.wait('@searchAPI').its('request.url').should('not.include', 'location:')
+    })
+
+    it('다른 필터와 함께 사용할 수 있어야 한다', () => {
+      // Type 필터 변경
+      cy.get('[data-testid="type-filter"]').click()
+      cy.contains('li', 'User').click()
+      cy.wait('@searchAPI')
+
+      // Location 필터 추가
+      cy.get('input[placeholder*="Seoul"]').type('Seoul')
+      cy.wait(600)
+      cy.wait('@searchAPI')
+
+      // 두 필터 모두 적용 확인
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('include', 'type:user')
+        .and('include', 'location:Seoul')
+    })
+  })
 })

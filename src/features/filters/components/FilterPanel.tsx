@@ -4,6 +4,7 @@ import { Box, Paper, Typography } from '@mui/material'
 import { TypeFilter } from '@/features/filters/components/TypeFilter'
 import { SearchInFilter } from '@/features/filters/components/SearchInFilter'
 import { ReposFilter } from '@/features/filters/components/ReposFilter'
+import { LocationFilter } from '@/features/filters/components/LocationFilter'
 import type { AccountType, SearchInField, RangeFilter } from '@/types'
 
 export interface FilterPanelProps {
@@ -13,6 +14,8 @@ export interface FilterPanelProps {
   onSearchInChange: (searchIn: SearchInField[]) => void
   repos: RangeFilter
   onReposChange: (repos: RangeFilter) => void
+  location: string
+  onLocationChange: (location: string) => void
   className?: string
 }
 
@@ -23,6 +26,8 @@ export function FilterPanel({
   onSearchInChange,
   repos,
   onReposChange,
+  location,
+  onLocationChange,
   className,
 }: FilterPanelProps) {
   return (
@@ -34,7 +39,8 @@ export function FilterPanel({
         <TypeFilter value={type} onChange={onTypeChange} />
         <SearchInFilter value={searchIn} onChange={onSearchInChange} />
         <ReposFilter value={repos} onChange={onReposChange} />
-        {/* 추가 필터들이 여기에 들어갈 예정 (Feature #4-#8) */}
+        <LocationFilter value={location} onChange={onLocationChange} />
+        {/* 추가 필터들이 여기에 들어갈 예정 (Feature #5-#8) */}
       </Box>
     </Paper>
   )

@@ -53,10 +53,17 @@ export class SearchQueryBuilder {
 
   /**
    * Feature #4: 위치
+   * 공백 포함 시 자동으로 따옴표 처리
    */
   location(location: string): this {
-    if (location) {
-      this.qualifiers.push(`location:"${location}"`)
+    const trimmed = location.trim().replace(/^"|"$/g, '') // 양쪽 공백 제거 및 기존 따옴표 제거
+    if (trimmed) {
+      // 공백이 포함되어 있으면 따옴표로 감싸기
+      if (trimmed.includes(' ')) {
+        this.qualifiers.push(`location:"${trimmed}"`)
+      } else {
+        this.qualifiers.push(`location:${trimmed}`)
+      }
     }
     return this
   }

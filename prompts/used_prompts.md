@@ -2532,6 +2532,292 @@ docs: create comprehensive README.md
 
 ---
 
+### 프롬프트 26: README.md 검증 및 Cypress 설치 문제 해결
+**사용한 도구**: Claude Code
+**날짜**: 2025-11-04
+
+#### 요청 내용
+```
+좋아. 일단! 작성한 READMR.md를 검토해볼게.
+실제로 해당 문서를 기준으로 동작확인 테스트 등등이 이루어질거라
+문서를 보고 실제로 a-z를 따라가 보면서 확인해볼게
+```
+
+**후속 프롬프트**:
+```
+pnpm test:e2e 실행 시 에러 발생:
+No version of Cypress is installed in: /Users/parkbulhwi/Library/Caches/Cypress/13.17.0/Cypress.app
+Please reinstall Cypress by running: cypress install
+
+이런 에러가 나는데 원인이 뭐야 ?
+```
+
+```
+test:e2e 실행해보면 cypress 브라우저 하얗게만 나오는데 이게 맞아 ??
+```
+
+#### 작업 내용
+
+**1. README.md 검증 작업**
+- Node.js 버전 확인 (v22.18.0) ✅
+- pnpm 버전 확인 (10.19.0) ✅
+- 프로젝트 구조 확인 ✅
+- .env.local 파일 존재 확인 ✅
+- TypeScript 컴파일 검증 (`pnpm type-check`) ✅
+- 단위 테스트 실행 (224 tests passed) ✅
+- ESLint 검사 (1 warning: any type) ⚠️
+- 프로덕션 빌드 (172 kB First Load JS) ✅
+
+**2. Cypress 설치 문제 진단**
+- **원인 분석**: Cypress는 2단계 설치 필요
+  1. npm 패키지 설치 (`pnpm install`) ✅
+  2. 바이너리 다운로드 (`~/Library/Caches/Cypress/`) ❌ (실패)
+- pnpm install 시 바이너리 다운로드가 건너뛰어진 상태
+
+**3. Cypress 설치 문제 해결**
+```bash
+# Cypress 바이너리 수동 설치
+npx cypress install
+
+# 설치 확인
+npx cypress verify
+# ✅ Verified Cypress! /Users/parkbulhwi/Library/Caches/Cypress/13.17.0/Cypress.app
+```
+
+**4. Cypress 하얀 화면 문제 해결**
+- **원인**: 개발 서버가 실행되지 않은 상태에서 Cypress 실행
+- **해결 방법**:
+  ```bash
+  # 터미널 1: 개발 서버 실행
+  pnpm dev
+
+  # 터미널 2: Cypress 실행
+  pnpm test:e2e
+  ```
+- cypress.config.ts의 baseUrl이 `http://localhost:3000`이므로 개발 서버 필수
+
+**5. README.md 업데이트**
+- 트러블슈팅 섹션 업데이트
+- "### 4. Cypress 테스트 실패" 섹션에 2가지 증상 추가:
+  - **증상 1**: Cypress executable not found (사용자가 실제로 겪은 에러)
+    ```
+    No version of Cypress is installed in: ~/Library/Caches/Cypress/13.17.0/Cypress.app
+    ```
+    해결: `npx cypress install` + `npx cypress verify`
+
+  - **증상 2**: E2E 테스트가 실행되지 않음
+    해결: 개발 서버 먼저 실행 필요
+
+**Commit**:
+```bash
+git commit -m "docs: update README troubleshooting for Cypress"
+```
+
+#### 결과
+**README.md 검증 완료**:
+- ✅ 모든 설치 명령어 정상 동작
+- ✅ TypeScript 컴파일 성공
+- ✅ 224개 단위 테스트 통과
+- ✅ 프로덕션 빌드 성공
+- ⚠️ ESLint 1개 경고 (any type, 비치명적)
+
+**Cypress 문제 해결 완료**:
+- ✅ Cypress 바이너리 설치 완료
+- ✅ Cypress 검증 완료
+- ✅ E2E 테스트 실행 가능 (개발 서버와 함께)
+- ✅ README.md 트러블슈팅 섹션 업데이트
+
+**개선 사항**:
+- 실제 사용자가 겪은 문제를 README.md에 반영
+- Cypress 2단계 설치 프로세스 명시
+- 개발 서버 선행 실행 필요성 강조
+
+**테스트 통계**:
+- Unit Tests: 224 passed
+- E2E Tests: 69 scenarios (3 files) - 실행 가능 상태 확인
+
+---
+
+### 프롬프트 27: Feature #4 위치별 검색 구현
+**사용한 도구**: Claude Code
+**날짜**: 2025-11-04
+
+#### 요청 내용
+```
+Feature #4 진행하자.
+진행하면서 테스트코드 작성도 같이 진행하고 cypress 쪽 테스트도 추가할게 있으면 같이 추가해 .
+프롬프트 업데이트도 잊지말고.
+```
+
+#### 작업 내용
+
+**1. Query Builder - location() 메서드 구현 (TDD)**
+- **테스트 작성** (11개 시나리오):
+  - 공백 없는 위치 (`location:Seoul`)
+  - 공백 포함 위치 따옴표 처리 (`location:"San Francisco"`)
+  - 빈 문자열 무시
+  - 공백만 있는 문자열 무시
+  - 양쪽 공백 trim 처리
+  - 기존 따옴표 제거 후 재처리
+  - 특수문자 포함 위치 처리
+  - 다른 필터와 조합
+
+- **구현** (src/features/search/utils/queryBuilder.ts:58-69):
+```typescript
+location(location: string): this {
+  const trimmed = location.trim().replace(/^"|"$/g, '')
+  if (trimmed) {
+    if (trimmed.includes(' ')) {
+      this.qualifiers.push(`location:"${trimmed}"`)
+    } else {
+      this.qualifiers.push(`location:${trimmed}`)
+    }
+  }
+  return this
+}
+```
+
+- **테스트 결과**: 63개 테스트 통과 (기존 52개 + 11개 추가)
+
+**2. LocationFilter 컴포넌트 구현 (TDD)**
+- **파일**:
+  - `src/features/filters/components/LocationFilter.tsx`
+  - `src/features/filters/components/LocationFilter.test.tsx`
+
+- **테스트 작성** (13개 시나리오):
+  - 렌더링 테스트 (기본값, 초기값, 도움말, className)
+  - 사용자 상호작용 (입력, 변경, 삭제, 공백, 특수문자)
+  - Edge Cases (onChange 없음, 긴 이름)
+  - 접근성 (label 연결, placeholder)
+
+- **구현**:
+```typescript
+export function LocationFilter({ value, onChange, className }: LocationFilterProps) {
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    onChange(event.target.value)
+  }
+
+  return (
+    <TextField
+      id="location-filter"
+      label="Location"
+      value={value}
+      onChange={handleChange}
+      placeholder="e.g. Seoul, San Francisco"
+      helperText="Search by location (city, country, etc.)"
+      fullWidth
+      className={className}
+    />
+  )
+}
+```
+
+- **테스트 결과**: 13개 테스트 모두 통과
+
+**3. Redux 상태 및 Hook 통합**
+- **Redux**: `searchSlice.ts`에 location 상태 이미 정의됨 (line 27)
+- **useFilters Hook에 Debounce 적용**:
+```typescript
+const locationTimeoutRef = useRef<NodeJS.Timeout>()
+const setLocation = useCallback(
+  (location: string) => {
+    dispatch(setFilters({ location }))
+
+    // Debounce: 500ms 후 검색 실행
+    if (locationTimeoutRef.current) {
+      clearTimeout(locationTimeoutRef.current)
+    }
+    locationTimeoutRef.current = setTimeout(() => {
+      dispatch(searchUsers({ query, page: 1 }))
+    }, 500)
+  },
+  [dispatch, query]
+)
+
+// Cleanup timeout on unmount
+useEffect(() => {
+  return () => {
+    if (locationTimeoutRef.current) {
+      clearTimeout(locationTimeoutRef.current)
+    }
+  }
+}, [])
+```
+
+**4. UI 통합**
+- **FilterPanel 업데이트**:
+  - LocationFilter import 추가
+  - Props에 location, onLocationChange 추가
+  - FilterPanel에 LocationFilter 렌더링
+
+- **page.tsx 업데이트**:
+  - useFilters에서 setLocation 구조분해
+  - FilterPanel에 location props 전달
+
+**5. Cypress E2E 테스트 추가**
+- **파일**: `cypress/e2e/filter-flow.cy.ts`
+- **추가 테스트** (8개 시나리오):
+  - Location 필터 표시 확인
+  - 위치 입력 기능
+  - Debounced 검색 실행 (500ms + 600ms 대기)
+  - 공백 포함 위치 URL 인코딩 확인 (`location:%22San%20Francisco%22`)
+  - 위치 변경 및 삭제
+  - 다른 필터와 조합 (Type + Location)
+
+**Commit**:
+```bash
+git add .
+git commit -m "feat: implement location filter with debounce
+
+Feature #4: 위치별 검색 구현
+
+## 구현 내용
+- Query Builder에 location() 메서드 추가 (공백 자동 따옴표 처리)
+- LocationFilter 컴포넌트 구현 (TextField)
+- useFilters에 debounce 적용 (500ms)
+- FilterPanel 및 page.tsx 통합
+- 11개 단위 테스트 + 13개 컴포넌트 테스트 + 8개 E2E 테스트
+
+## 기능
+- 자유 텍스트 위치 입력
+- 공백 포함 시 자동 따옴표: location:\"San Francisco\"
+- Debounce로 과도한 API 호출 방지
+- GitHub API: location:Seoul, location:\"San Francisco\"
+
+## 테스트
+- 248 unit tests passed (기존 224 + 24 추가)
+- TypeScript 컴파일 성공
+- Production 빌드 성공 (172 kB)
+
+🤖 Generated with [Claude Code](https://claude.com/claude-code)
+
+Co-Authored-By: Claude <noreply@anthropic.com>"
+```
+
+#### 결과
+**구현 완료**:
+- ✅ Query Builder location() 메서드 (63 tests)
+- ✅ LocationFilter 컴포넌트 (13 tests)
+- ✅ Redux 통합 및 Debounce (500ms)
+- ✅ FilterPanel + page.tsx 통합
+- ✅ Cypress E2E 테스트 8개 시나리오
+
+**테스트 통계**:
+- Unit Tests: 248 passed (224 → 248, +24)
+- E2E Tests: 77 scenarios (69 → 77, +8)
+- TypeScript: 컴파일 성공
+- Build: 172 kB First Load JS
+
+**Issue 완료**:
+- ✅ Issue #4 Closed
+
+**개선 사항**:
+- Debounce를 통한 API 호출 최적화
+- 공백 처리 자동화 (사용자 편의성)
+- TDD 방식으로 견고한 테스트 커버리지 확보
+
+---
+
 ## 작성 가이드
 
 각 프롬프트 기록은 다음 형식을 따라 작성합니다:

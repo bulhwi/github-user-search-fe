@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useRef, useEffect } from 'react'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { setFilters, searchUsers } from '@/store/slices/searchSlice'
 import type { AccountType, SearchInField, RangeFilter } from '@/types'
@@ -33,14 +33,31 @@ export function useFilters() {
     [dispatch, query]
   )
 
-  // 위치 필터 변경 (Feature #4 - Future)
+  // 위치 필터 변경 (Feature #4) - Debounced
+  const locationTimeoutRef = useRef<NodeJS.Timeout>()
   const setLocation = useCallback(
     (location: string) => {
       dispatch(setFilters({ location }))
-      dispatch(searchUsers({ query, page: 1 }))
+
+      // Debounce: 500ms 후 검색 실행
+      if (locationTimeoutRef.current) {
+        clearTimeout(locationTimeoutRef.current)
+      }
+      locationTimeoutRef.current = setTimeout(() => {
+        dispatch(searchUsers({ query, page: 1 }))
+      }, 500)
     },
     [dispatch, query]
   )
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (locationTimeoutRef.current) {
+        clearTimeout(locationTimeoutRef.current)
+      }
+    }
+  }, [])
 
   // 언어 필터 변경 (Feature #5 - Future)
   const setLanguage = useCallback(

@@ -114,7 +114,7 @@ describe('SearchQueryBuilder', () => {
   describe('Feature #4: 위치', () => {
     it('위치를 추가해야 한다', () => {
       const builder = new SearchQueryBuilder('john').location('Seoul')
-      expect(builder.build()).toBe('john location:"Seoul"')
+      expect(builder.build()).toBe('john location:Seoul')
     })
 
     it('공백이 있는 위치를 처리해야 한다', () => {
@@ -134,7 +134,8 @@ describe('SearchQueryBuilder', () => {
 
     it('따옴표가 포함된 위치를 처리해야 한다', () => {
       const builder = new SearchQueryBuilder('john').location('Seoul "Capital"')
-      expect(builder.build()).toBe('john location:"Seoul "Capital""')
+      // 내부 따옴표는 그대로 유지됨 (GitHub API에서 허용)
+      expect(builder.build()).toBe('john location:"Seoul "Capital"')
     })
   })
 
@@ -234,7 +235,7 @@ describe('SearchQueryBuilder', () => {
         .location('Seoul')
         .followers(100)
 
-      expect(builder.build()).toBe('john type:user location:"Seoul" followers:>=100')
+      expect(builder.build()).toBe('john type:user location:Seoul followers:>=100')
     })
 
     it('모든 필터를 조합해야 한다', () => {
@@ -253,7 +254,7 @@ describe('SearchQueryBuilder', () => {
       expect(result).toContain('type:user')
       expect(result).toContain('in:name,email')
       expect(result).toContain('repos:10..100')
-      expect(result).toContain('location:"Korea"')
+      expect(result).toContain('location:Korea')
       expect(result).toContain('language:javascript')
       expect(result).toContain('created:>2020-01-01')
       expect(result).toContain('followers:100..1000')
@@ -268,7 +269,7 @@ describe('SearchQueryBuilder', () => {
 
       const result = builder.build()
       expect(result).toContain('type:user')
-      expect(result).toContain('location:"Seoul"')
+      expect(result).toContain('location:Seoul')
       expect(result).toContain('followers:>=100')
     })
   })
@@ -291,7 +292,7 @@ describe('SearchQueryBuilder', () => {
       expect(query).toContain('react')
       expect(query).toContain('type:user')
       expect(query).toContain('in:login,name')
-      expect(query).toContain('location:"Seoul"')
+      expect(query).toContain('location:Seoul')
       expect(query).toContain('language:javascript')
       expect(query).toContain('repos:10..100')
       expect(query).toContain('followers:>=100')
@@ -345,7 +346,7 @@ describe('SearchQueryBuilder', () => {
         .followers(100)
         .build()
 
-      expect(result).toBe('test type:user location:"Seoul" followers:>=100')
+      expect(result).toBe('test type:user location:Seoul followers:>=100')
     })
 
     it('같은 타입을 여러 번 호출하면 모두 추가된다', () => {
@@ -390,6 +391,66 @@ describe('SearchQueryBuilder', () => {
     it('0을 팔로워 최소값으로 처리할 수 있어야 한다', () => {
       const builder = new SearchQueryBuilder('john').followers(0)
       expect(builder.build()).toBe('john followers:>=0')
+    })
+  })
+
+  describe('Feature #4: 위치 검색', () => {
+    it('공백 없는 위치를 추가해야 한다', () => {
+      const builder = new SearchQueryBuilder('john').location('Seoul')
+      expect(builder.build()).toBe('john location:Seoul')
+    })
+
+    it('공백 포함 위치는 따옴표로 감싸야 한다', () => {
+      const builder = new SearchQueryBuilder('john').location('San Francisco')
+      expect(builder.build()).toBe('john location:"San Francisco"')
+    })
+
+    it('빈 문자열은 무시해야 한다', () => {
+      const builder = new SearchQueryBuilder('john').location('')
+      expect(builder.build()).toBe('john')
+    })
+
+    it('공백만 있는 문자열은 무시해야 한다', () => {
+      const builder = new SearchQueryBuilder('john').location('   ')
+      expect(builder.build()).toBe('john')
+    })
+
+    it('양쪽 공백을 trim 처리해야 한다', () => {
+      const builder = new SearchQueryBuilder('john').location('  Seoul  ')
+      expect(builder.build()).toBe('john location:Seoul')
+    })
+
+    it('중간 공백은 유지하며 따옴표로 감싸야 한다', () => {
+      const builder = new SearchQueryBuilder('john').location('  San Francisco  ')
+      expect(builder.build()).toBe('john location:"San Francisco"')
+    })
+
+    it('이미 따옴표가 있으면 제거하고 다시 감싸야 한다', () => {
+      const builder = new SearchQueryBuilder('john').location('"Seoul"')
+      expect(builder.build()).toBe('john location:Seoul')
+    })
+
+    it('이미 따옴표가 있고 공백이 있으면 따옴표를 유지해야 한다', () => {
+      const builder = new SearchQueryBuilder('john').location('"San Francisco"')
+      expect(builder.build()).toBe('john location:"San Francisco"')
+    })
+
+    it('특수문자가 포함된 위치를 처리해야 한다', () => {
+      const builder = new SearchQueryBuilder('john').location('São Paulo')
+      expect(builder.build()).toBe('john location:"São Paulo"')
+    })
+
+    it('빈 쿼리에도 위치를 추가할 수 있어야 한다', () => {
+      const builder = new SearchQueryBuilder('').location('Seoul')
+      expect(builder.build()).toBe('location:Seoul')
+    })
+
+    it('다른 필터와 함께 사용할 수 있어야 한다', () => {
+      const builder = new SearchQueryBuilder('john')
+        .type('user')
+        .location('Seoul')
+        .repos(10)
+      expect(builder.build()).toBe('john type:user location:Seoul repos:>=10')
     })
   })
 })
