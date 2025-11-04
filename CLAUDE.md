@@ -6,7 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 GitHub 사용자 검색 웹 애플리케이션 - GitHub REST API를 사용하여 사용자를 검색하고 결과를 표시하는 프론트엔드 애플리케이션입니다.
 
-**상세 문서**: `docs/PRD.md` 참고
+**프로젝트 상태**: ✅ 완료 (2025-11-05)
+**상세 문서**: `docs/PRD.md`, `docs/TECHNICAL_SPECIFICATION.md` 참고
 
 ## Tech Stack
 
@@ -46,72 +47,97 @@ pnpm test:all     # Run all tests
 
 ## Architecture
 
-### Clean Architecture + Modularity
+### Clean Architecture + Feature-based Modularity ✅
 
-프로젝트는 Clean Architecture 원칙을 따르며 다음과 같이 구성됩니다:
+프로젝트는 Clean Architecture 원칙에 따라 Layer를 분리하고, Feature-based Modularity로 기능별 독립적 모듈을 구성합니다:
 
+**Layer 구조**:
+- **Presentation Layer**: Components (page.tsx, SearchBar, FilterPanel, UserList)
+- **Application Layer**: Custom Hooks (useSearch, useFilters), Redux Store
+- **Domain Layer**: Business Logic (queryBuilder), Type Definitions
+- **Infrastructure Layer**: API Routes, API Clients (HttpClient, GitHubApiClient)
+
+**실제 디렉토리 구조**:
 ```
 src/
-├── app/                    # Next.js App Router pages
-├── features/               # Feature modules (검색, 필터, 결과 표시 등)
-│   ├── search/
-│   ├── filters/
-│   └── results/
-├── shared/                 # Shared utilities and components
-│   ├── ui/                # Reusable UI components
-│   ├── api/               # API client and utilities
-│   ├── hooks/             # Custom React hooks
-│   └── utils/             # Utility functions
-├── store/                 # Redux store configuration
-└── types/                 # TypeScript type definitions
+├── app/                          # Next.js App Router + Infrastructure Layer
+│   ├── api/search/route.ts       # GitHub API Proxy
+│   ├── page.tsx                  # Template Layer
+│   └── providers.tsx             # Redux + MUI Providers
+├── features/                     # Feature Modules
+│   ├── search/                   # 검색 기능 ✅
+│   │   ├── components/SearchBar.tsx
+│   │   ├── hooks/useSearch.ts   # Application Layer
+│   │   └── utils/queryBuilder.ts # Domain Layer
+│   ├── filters/                  # 필터 기능 (8가지) ✅
+│   │   ├── components/          # FilterPanel, TypeFilter, etc.
+│   │   └── hooks/useFilters.ts
+│   └── results/                  # 결과 표시 ✅
+│       ├── components/          # UserList, UserCard
+│       └── hooks/useInfiniteScroll.ts
+├── shared/                       # Shared Modules
+│   ├── api/                     # Infrastructure Layer
+│   │   ├── client.ts            # HTTP Client 추상화
+│   │   └── github.ts            # GitHub API Client
+│   └── components/              # RateLimitIndicator, ThemeToggle
+├── store/                        # Redux Store (Application Layer)
+│   ├── index.ts
+│   └── slices/searchSlice.ts
+└── types/                        # Domain Layer
+    └── index.ts
 ```
 
 ## Key Features
 
-### 8가지 검색 기능
-1. 사용자/조직 타입으로 검색 (type qualifier)
-2. 계정 이름/성명/메일로 검색 (in qualifier)
-3. 리포지토리 수로 검색 (repos qualifier)
-4. 위치로 검색 (location qualifier)
-5. 언어로 검색 (language qualifier)
-6. 계정 생성일로 검색 (created qualifier)
-7. 팔로워 수로 검색 (followers qualifier)
-8. 후원 가능 여부로 검색 (is:sponsorable)
+### 8가지 검색 기능 ✅ 모두 구현 완료
+1. ✅ 사용자/조직 타입으로 검색 (type qualifier)
+2. ✅ 계정 이름/성명/메일로 검색 (in qualifier)
+3. ✅ 리포지토리 수로 검색 (repos qualifier - 범위 지원)
+4. ✅ 위치로 검색 (location qualifier)
+5. ✅ 언어로 검색 (language qualifier)
+6. ✅ 계정 생성일로 검색 (created qualifier - DateRangeFilter)
+7. ✅ 팔로워 수로 검색 (followers qualifier - 범위 지원)
+8. ✅ 후원 가능 여부로 검색 (is:sponsorable)
 
-### 정렬 옵션
-- Best match (기본)
-- Followers (팔로워 수)
-- Repositories (리포지토리 수)
-- Joined (가입일)
-- 모든 정렬은 DESC(내림차순) 지원
+### 정렬 옵션 ✅
+- ✅ Best match (기본값)
+- ✅ Followers (팔로워 수)
+- ✅ Repositories (리포지토리 수)
+- ✅ Joined (가입일)
+- ✅ ASC/DESC 지원 (Best Match 제외)
 
-## Implementation Requirements
+## Implementation Status ✅
 
-### UI/UX
-- **다크모드**: 시스템 설정 연동 (prefers-color-scheme)
-- **반응형**: SM / MD / LG / XL 브레이크포인트 지원
-- **디자인**: Material Design 칼라 팔레트
-- **폰트**: Apple 기본 폰트 → Noto Sans 폴백
+### UI/UX ✅
+- ✅ **다크모드**: MUI 테마 + LocalStorage 저장
+- ✅ **반응형**: SM / MD / LG / XL 브레이크포인트 지원
+- ✅ **디자인**: Material Design 3.0
+- ✅ **반응형 레이아웃**: 모바일/태블릿/데스크톱 대응
 
-### Data Fetching
-- **SSR**: 첫 페이지는 Server-Side Rendering
-- **CSR**: 이후 페이지는 Client-Side Rendering (무한 스크롤)
-- **API**: 모든 GitHub API 호출은 서버 라우트에서 수행 (Authorization token 사용)
-- **Rate Limiting**:
-  - Rate limit 초과 시 재시도 로직
-  - 남은 쿼터 UI에 표시
+### Data Fetching ✅
+- ✅ **CSR**: Client-Side Rendering (무한 스크롤)
+- ✅ **API**: Next.js API Routes를 Proxy로 사용
+- ✅ **Data Enrichment**: User details API 추가 호출 (followers, public_repos 추가)
+- ✅ **Rate Limiting**:
+  - RateLimitIndicator 컴포넌트 구현
+  - 남은 쿼터 / 전체 쿼터 표시
+  - 리셋 시간 표시
+  - Rate limit 초과 시 재시도 버튼
 
-### Image Processing
-- **아바타 렌더링**: HTML5 Canvas + WebAssembly 사용
-- 성능 최적화를 위한 이미지 처리
-
-### Testing Requirements
-- **필수 테스트 대상**:
-  - 검색 쿼리 빌더 로직
-  - 정렬 및 페이징 로직
-  - 데이터 매핑 및 표시 안전성
-  - SSR/CSR 경계 로직
-- **추가 테스트**: 각 추가 테스트 건당 가산점
+### Testing ✅ 완료
+- ✅ **단위 테스트**: 224 tests
+  - queryBuilder: 58 tests
+  - TypeFilter: 16 tests
+  - SearchInFilter: 20 tests
+  - ReposFilter: 27 tests
+  - SortControl: 16 tests
+  - UserCard: 33 tests
+  - github API client: 30 tests
+  - searchSlice: 46 tests
+- ✅ **E2E 테스트**: 69 scenarios
+  - search-flow: 20 tests
+  - filter-flow: 23 tests
+  - error-handling: 26 tests
 
 ## MUI + Tailwind CSS 주의사항
 

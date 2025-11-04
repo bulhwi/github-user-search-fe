@@ -48,15 +48,15 @@ GitHub User Search는 GitHub API를 활용하여 사용자와 조직을 검색�
 - **실시간 검색**: 검색어 입력 시 즉시 결과 표시
 - **검색 히스토리**: 이전 검색어 유지
 
-### 필터링 (구현 중)
+### 필터링 ✅ 모두 구현 완료
 - ✅ **타입 필터**: User/Organization 구분
 - ✅ **검색 필드**: Login/Name/Email 선택
 - ✅ **리포지토리 수**: 최소/최대 범위 지정
-- 🚧 **위치**: 지역별 검색
-- 🚧 **언어**: 주 사용 언어 필터링
-- 🚧 **계정 생성일**: 날짜 범위 지정
-- 🚧 **팔로워 수**: 최소/최대 범위 지정
-- 🚧 **후원 가능 여부**: Sponsorable 필터
+- ✅ **위치**: 지역별 검색
+- ✅ **언어**: 주 사용 언어 필터링
+- ✅ **계정 생성일**: 날짜 범위 지정
+- ✅ **팔로워 수**: 최소/최대 범위 지정
+- ✅ **후원 가능 여부**: Sponsorable 필터
 
 ### 결과 표시
 - **사용자 카드**: 아바타, 이름, 타입, Bio, 위치, 회사
@@ -862,7 +862,8 @@ Access-Control-Allow-Origin error
 - [GitHub Search API](https://docs.github.com/en/rest/search#search-users)
 
 ### 프로젝트 문서
-- [PRD (Product Requirements Document)](./PRD.md)
+- [PRD (Product Requirements Document)](./docs/PRD.md)
+- [Technical Specification](./docs/TECHNICAL_SPECIFICATION.md)
 - [CLAUDE.md](./CLAUDE.md)
 - [AI 프롬프트 기록](./prompts/used_prompts.md)
 
