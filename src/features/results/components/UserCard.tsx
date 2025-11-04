@@ -10,7 +10,10 @@ import {
 } from '@mui/material'
 import LocationOnIcon from '@mui/icons-material/LocationOn'
 import BusinessIcon from '@mui/icons-material/Business'
+import PeopleIcon from '@mui/icons-material/People'
+import FolderIcon from '@mui/icons-material/Folder'
 import { UserAvatar } from './UserAvatar'
+import { formatNumber } from '@/shared/utils/formatNumber'
 import type { GitHubUser } from '@/types'
 
 export interface UserCardProps {
@@ -90,12 +93,18 @@ export function UserCard({ user, className }: UserCardProps) {
           )}
 
           <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
-            <Typography variant="body2" color="text.secondary">
-              <strong>{user.followers}</strong> followers
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              <strong>{user.public_repos}</strong> repos
-            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <PeopleIcon fontSize="small" color="action" />
+              <Typography variant="body2" color="text.secondary">
+                {formatNumber(user.followers)}
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <FolderIcon fontSize="small" color="action" />
+              <Typography variant="body2" color="text.secondary">
+                {formatNumber(user.public_repos)}
+              </Typography>
+            </Box>
           </Box>
         </Box>
       </CardContent>
