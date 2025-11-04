@@ -3259,3 +3259,282 @@ git commit -m "feat: implement language filter with Autocomplete"
 ```
 
 ---
+
+## 날짜: 2025-11-05
+
+### 프롬프트 18: Feature #8 구현 (후원 가능 여부 필터)
+**사용한 도구**: Claude Code
+
+**프롬프트**:
+```
+8번 진행해보자
+```
+
+**목표**:
+- Issue #8: [Feature #8] 후원 가능 여부 검색 (is:sponsorable)
+- GitHub API `is:sponsorable` qualifier를 사용한 Boolean 필터 구현
+- MUI Switch 컴포넌트로 ON/OFF 토글
+
+**결과**:
+
+**1. 사전 검증**
+```
+✅ types/search.ts: sponsorable: boolean (이미 정의됨)
+✅ queryBuilder.ts: sponsorable(enabled: boolean) 메서드 (이미 구현됨)
+✅ queryBuilder.test.ts: sponsorable() 테스트 (이미 작성됨)
+```
+
+**2. SponsorableFilter 컴포넌트 구현 (TDD)**
+
+**테스트 작성** (`SponsorableFilter.test.tsx`):
+```typescript
+// 18 tests 작성
+describe('SponsorableFilter', () => {
+  // 렌더링 - 성공 케이스 (5 tests)
+  - 기본 요소들이 표시되어야 한다
+  - 초기 값이 false일 때 스위치가 꺼져있어야 한다
+  - 초기 값이 true일 때 스위치가 켜져있어야 한다
+  - 도움말 텍스트가 표시되어야 한다
+  - 커스텀 className을 적용할 수 있어야 한다
+
+  // 사용자 상호작용 - 성공 케이스 (4 tests)
+  - 스위치를 클릭하면 onChange가 true로 호출되어야 한다
+  - 켜진 스위치를 클릭하면 onChange가 false로 호출되어야 한다
+  - 여러 번 토글할 수 있어야 한다 (ControlledComponent 패턴)
+  - label을 클릭해도 스위치가 토글되어야 한다
+
+  // Edge Cases (3 tests)
+  - onChange가 제공되지 않아도 렌더링되어야 한다
+  - value가 undefined일 때 false로 처리되어야 한다
+  - value가 null일 때 false로 처리되어야 한다
+
+  // 접근성 (4 tests)
+  - 스위치가 올바른 role을 가져야 한다
+  - 스위치가 aria-label을 가져야 한다
+  - FormControlLabel이 스위치와 연결되어야 한다
+  - 도움말 텍스트가 있어야 한다
+
+  // 스타일링 (2 tests)
+  - FormControl이 fullWidth여야 한다
+  - Switch 컴포넌트가 렌더링되어야 한다
+})
+```
+
+**컴포넌트 구현** (`SponsorableFilter.tsx`):
+```typescript
+export function SponsorableFilter({ value, onChange, className }: SponsorableFilterProps) {
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    onChange(event.target.checked)
+  }
+
+  return (
+    <FormControl fullWidth className={className}>
+      <FormControlLabel
+        control={
+          <Switch
+            checked={value || false}
+            onChange={handleChange}
+            inputProps={{ 'aria-label': 'Sponsorable only' }}
+          />
+        }
+        label="Sponsorable only"
+      />
+      <FormHelperText>Show only sponsorable users</FormHelperText>
+    </FormControl>
+  )
+}
+```
+
+**3. Application Layer 통합**
+
+**useFilters Hook** (`useFilters.ts`):
+```typescript
+// Feature #8: 후원 가능 여부 필터 변경
+const setSponsorable = useCallback(
+  (sponsorable: boolean) => {
+    dispatch(setFilters({ sponsorable }))
+    dispatch(searchUsers({ query, page: 1 }))
+  },
+  [dispatch, query]
+)
+
+return {
+  filters,
+  setType,
+  setSearchIn,
+  setLocation,
+  setLanguage,
+  setRepos,
+  setCreated,
+  setFollowers,
+  setSponsorable, // NEW
+}
+```
+
+**FilterPanel** (`FilterPanel.tsx`):
+```typescript
+// Props 확장
+export interface FilterPanelProps {
+  // ... 기존 props
+  sponsorable: boolean
+  onSponsorableChange: (sponsorable: boolean) => void
+  className?: string
+}
+
+// Component
+<Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+  <TypeFilter value={type} onChange={onTypeChange} />
+  <SearchInFilter value={searchIn} onChange={onSearchInChange} />
+  <ReposFilter value={repos} onChange={onReposChange} />
+  <FollowersFilter value={followers} onChange={onFollowersChange} />
+  <LocationFilter value={location} onChange={onLocationChange} />
+  <LanguageFilter value={language} onChange={onLanguageChange} />
+  <DateRangeFilter value={created} onChange={onCreatedChange} />
+  <SponsorableFilter value={sponsorable} onChange={onSponsorableChange} /> {/* NEW */}
+</Box>
+```
+
+**Template Layer** (`page.tsx`):
+```typescript
+// Application Layer: 필터 로직
+const {
+  filters,
+  setType,
+  setSearchIn,
+  setRepos,
+  setLocation,
+  setLanguage,
+  setCreated,
+  setFollowers,
+  setSponsorable  // NEW
+} = useFilters()
+
+<FilterPanel
+  type={filters.type}
+  onTypeChange={setType}
+  searchIn={filters.searchIn}
+  onSearchInChange={setSearchIn}
+  repos={filters.repos}
+  onReposChange={setRepos}
+  location={filters.location}
+  onLocationChange={setLocation}
+  language={filters.language}
+  onLanguageChange={setLanguage}
+  created={filters.created}
+  onCreatedChange={setCreated}
+  followers={filters.followers}
+  onFollowersChange={setFollowers}
+  sponsorable={filters.sponsorable}        {/* NEW */}
+  onSponsorableChange={setSponsorable}     {/* NEW */}
+/>
+```
+
+**4. E2E 테스트 추가** (`filter-flow.cy.ts`):
+```typescript
+describe('SponsorableFilter (후원 가능 여부) 변경', () => {
+  // 8 scenarios
+
+  it('Sponsorable 필터가 표시되어야 한다', () => {
+    cy.contains('Sponsorable only').should('be.visible')
+  })
+
+  it('기본값은 OFF여야 한다', () => {
+    cy.contains('Sponsorable only').find('input[type="checkbox"]').should('not.be.checked')
+  })
+
+  it('스위치를 켤 수 있어야 한다', () => {
+    cy.contains('Sponsorable only').find('input[type="checkbox"]').check()
+    cy.wait('@searchAPI')
+    cy.wait('@searchAPI')
+      .its('request.url')
+      .should('include', 'is:sponsorable')
+  })
+
+  it('스위치를 끌 수 있어야 한다', () => {
+    // 먼저 켜기
+    cy.contains('Sponsorable only').find('input[type="checkbox"]').check()
+    cy.wait('@searchAPI')
+    // 다시 끄기
+    cy.contains('Sponsorable only').find('input[type="checkbox"]').uncheck()
+    cy.wait('@searchAPI')
+    // is:sponsorable 파라미터가 없어야 함
+    cy.wait('@searchAPI')
+      .its('request.url')
+      .should('not.include', 'is:sponsorable')
+  })
+
+  it('여러 번 토글할 수 있어야 한다')
+  it('다른 필터와 함께 사용할 수 있어야 한다')
+  it('복잡한 필터 조합에서 사용할 수 있어야 한다')
+  it('도움말 텍스트가 표시되어야 한다')
+})
+```
+
+**5. 테스트 결과**
+
+**단위 테스트**:
+```
+✅ 314 tests passed (296 → 314, +18 tests)
+- SponsorableFilter.test.tsx: 18 tests
+```
+
+**Production Build**:
+```
+✅ Build successful
+Route (app)                              Size     First Load JS
+┌ ○ /                                    124 kB          247 kB
+└ ƒ /api/search                          0 B                0 B
+
+변화 없음 (247 kB - Switch는 기존 MUI 번들에 포함)
+```
+
+**E2E 테스트**:
+- 102 → 110 시나리오 (+8 scenarios)
+- SponsorableFilter 기능 검증
+- 다른 필터와의 통합 검증
+
+**기술적 결정**:
+
+1. **MUI Switch 선택**
+   - Boolean 필터에 적합한 UI
+   - ON/OFF 상태가 시각적으로 명확
+   - MUI 디자인 시스템과 일관성 유지
+
+2. **Simple API**
+   - value: boolean (true/false만)
+   - onChange: (value: boolean) => void
+   - Range 필터보다 단순한 인터페이스
+
+3. **ControlledComponent 테스트 패턴**
+   - Switch 토글 테스트에 적용
+   - 여러 번 토글 시나리오 검증
+   - 상태 변화 추적
+
+4. **접근성 강화**
+   - role="checkbox"로 스크린 리더 지원
+   - aria-label 제공
+   - FormControlLabel로 label-input 연결
+   - 도움말 텍스트 제공
+
+**Issue 완료**:
+- ✅ Issue #8 Closed
+
+**개선 사항**:
+- 후원 가능한 사용자 필터링 기능 추가
+- Boolean 필터의 간결한 UX
+- 다른 필터와 자유롭게 조합 가능
+
+**파일 변경 사항**:
+```
+추가:
+- src/features/filters/components/SponsorableFilter.tsx (39 lines)
+- src/features/filters/components/SponsorableFilter.test.tsx (145 lines)
+
+수정:
+- src/features/filters/hooks/useFilters.ts (setSponsorable 추가)
+- src/features/filters/components/FilterPanel.tsx (SponsorableFilter 통합)
+- src/app/page.tsx (setSponsorable 연결)
+- cypress/e2e/filter-flow.cy.ts (+8 scenarios, 719 → 821 lines)
+```
+
+---
