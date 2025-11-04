@@ -97,11 +97,47 @@ export async function GET(request: NextRequest) {
     // 6. Parse and return response
     const data = await response.json()
 
-    // Debug: Log sample of results with repo counts
+    // 7. Enrich user data with detailed information
+    // GitHub Search API doesn't return followers/public_repos, so we need to fetch them
     if (data.items && data.items.length > 0) {
+      const enrichedItems = await Promise.all(
+        data.items.map(async (user: any) => {
+          try {
+            // Fetch detailed user info
+            const userResponse = await fetch(`https://api.github.com/users/${user.login}`, {
+              headers: {
+                Authorization: `token ${githubToken}`,
+                Accept: 'application/vnd.github.v3+json',
+              },
+            })
+
+            if (userResponse.ok) {
+              const userDetails = await userResponse.json()
+              // Merge search result with detailed info
+              return {
+                ...user,
+                followers: userDetails.followers,
+                public_repos: userDetails.public_repos,
+                name: userDetails.name,
+                bio: userDetails.bio,
+                location: userDetails.location,
+                company: userDetails.company,
+              }
+            }
+          } catch (error) {
+            console.error(`Failed to fetch details for ${user.login}:`, error)
+          }
+          // Return original user data if detail fetch fails
+          return user
+        })
+      )
+
+      data.items = enrichedItems
+
+      // Debug: Log sample of results with repo counts
       console.log('[GitHub API] Sample results (first 3):')
-      data.items.slice(0, 3).forEach((user: any) => {
-        console.log(`  - ${user.login}: ${user.public_repos} repos`)
+      enrichedItems.slice(0, 3).forEach((user: any) => {
+        console.log(`  - ${user.login}: ${user.public_repos} repos, ${user.followers} followers`)
       })
     }
 
