@@ -10,6 +10,7 @@ import { FilterPanel } from '@/features/filters/components/FilterPanel'
 import { UserList } from '@/features/results/components/UserList'
 import { RateLimitIndicator } from '@/shared/components/RateLimitIndicator'
 import { SortControl } from '@/features/filters/components/SortControl'
+import { ThemeToggle } from '@/shared/components/ThemeToggle'
 import type { SortOption } from '@/types'
 
 /**
@@ -48,12 +49,11 @@ export default function Home() {
 
   return (
     <Container maxWidth="xl" className="py-8">
-      {/* Rate Limit Indicator (Feature #13) */}
-      {rateLimit && (
-        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
-          <RateLimitIndicator rateLimit={rateLimit} />
-        </Box>
-      )}
+      {/* Header: Theme Toggle + Rate Limit Indicator */}
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+        <ThemeToggle />
+        {rateLimit && <RateLimitIndicator rateLimit={rateLimit} />}
+      </Box>
 
       <Typography variant="h3" component="h1" gutterBottom>
         GitHub User Search
