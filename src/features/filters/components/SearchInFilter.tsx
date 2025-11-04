@@ -17,8 +17,8 @@ export interface SearchInFilterProps {
 }
 
 const searchInOptions: Array<{ value: SearchInField; label: string }> = [
-  { value: 'login', label: 'Username' },
-  { value: 'name', label: 'Full Name' },
+  { value: 'login', label: 'Login' },
+  { value: 'name', label: 'Name' },
   { value: 'email', label: 'Email' },
 ]
 
@@ -67,7 +67,7 @@ export function SearchInFilter({
         ))}
       </FormGroup>
       <FormHelperText>
-        Search in username, full name, or email (at least one required)
+        Search in login, name, or email (at least one required)
       </FormHelperText>
     </FormControl>
   )
