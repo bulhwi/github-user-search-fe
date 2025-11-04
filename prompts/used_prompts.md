@@ -4330,59 +4330,66 @@ const progressColor =
 **프롬프트**:
 ```
 [사용자가 6개의 개선사항 공유]
-1. 다크모드 지원 (System Preference 연동)
-2. 에러 발생 시 재시도 버튼
-3. Incomplete results 경고 표시
-4. DateRangeFilter Cypress 테스트 수정
-5. SearchBar + Location 필터 조합 버그
-6. 기타 UI/UX 개선사항
+1. Location 필터에 Seoul입력하고 search바에 bulhwi 입력시 아무것도 안나옴
+   정상결과: Seoul 에 bulhwi 깃헙 조회 결과가 나와야함.
+2. 검색 결과를 초기화 -> 초기 상태로 돌리는 기능이 없음.
+3. 조회시, 유저별 팔로워수, repo 수 노출 추가.
+4. 필터내의 요소들 한글화 -> 가독성을 위해
+5. Grid 컴포넌트 처럼 deprecated 처리된 컴포넌트를 다른 사용가능한 혹은 최신스펙의 컴포넌트로 변경.
+6. 각 경로에 있는 test.ts. test.tsx 들을 각 경로에 test/ 하위로 옮기기
 ```
+
+**Assistant 응답**:
+사용자가 제안한 6가지 개선사항을 확인하고 GitHub Issues로 등록하겠습니다.
 
 **결과**:
 
-#### GitHub Issues 생성
-사용자가 공유한 개선사항을 바탕으로 GitHub Issues 생성:
+#### 1. GitHub Issues 생성
+각 개선사항을 구조화된 Issue로 변환:
 
-- **Issue #14**: [UI/UX] 다크모드 지원 (System Preference)
-  - System prefers-color-scheme 감지
-  - LocalStorage에 사용자 선택 저장
-  - Toggle 컴포넌트 구현
-
-- **Issue #15**: [Feature] 정렬 기능 강화
-  - ASC/DESC 토글 지원
-  - SortControl 컴포넌트 개선
-
-- **Issue #16**: [Feature] 페이지네이션 개선
-  - 무한 스크롤 구현
-  - Load More 버튼
-
-- **Issue #17**: [Bug] 에러 발생 시 재시도 버튼 미구현
-  - UserList 컴포넌트에 retry 버튼 추가
-  - Error boundary 개선
-
-- **Issue #18**: [Feature] Incomplete results 경고 표시
-  - API 응답의 incomplete_results 처리
-  - Alert 컴포넌트로 사용자에게 알림
-
-- **Issue #19**: [Test] E2E 테스트 커버리지 확대
-  - Error handling 시나리오 추가
-  - Filter flow 테스트 추가
-
-- **Issue #20**: [Bug] DateRangeFilter Cypress 테스트 실패
-  - MUI Date Picker 상호작용 문제
-  - {force: true} 옵션 필요
-
-- **Issue #21**: [Bug] SearchBar + Location 필터 조합 시 검색 결과 없음
+- **Issue #21**: [Bug] Location 필터 + SearchBar 조합 시 검색 결과 없음
+  - bulhwi (SearchBar) + Seoul (Location) 조합 시 결과 없음
   - Query builder 로직 검증 필요
-  - 필터 조합 테스트 추가
+  - 우선순위: High (기능 버그)
+
+- **Issue #22**: [Feature] 검색 결과 초기화 버튼 추가
+  - 현재 초기화 기능 없음
+  - Reset 버튼 추가 필요
+  - 필터 + 검색어 모두 초기 상태로
+
+- **Issue #23**: [Feature] 유저 카드에 팔로워수, 리포지토리 수 표시
+  - UserCard 컴포넌트 개선
+  - GitHub API에서 followers, public_repos 데이터 추가
+  - UI에 통계 정보 표시
+
+- **Issue #24**: [UI/UX] 필터 요소 한글화
+  - Type Filter: User/Organization → 사용자/조직
+  - Search In: Login/Name/Email → 아이디/이름/이메일
+  - 기타 필터 레이블 한글화
+  - 가독성 향상
+
+- **Issue #25**: [Refactor] Deprecated 컴포넌트 최신 스펙으로 변경
+  - Grid → Grid2 (MUI v6)
+  - 기타 deprecated 컴포넌트 확인 및 변경
+  - TypeScript 경고 제거
+
+- **Issue #26**: [Refactor] 테스트 파일 __tests__/ 디렉토리로 이동
+  - 현재: 각 컴포넌트와 같은 레벨에 test 파일 위치
+  - 개선: components/__tests__/ 구조로 변경
+  - Jest/Cypress 테스트 파일 정리
+
+#### 2. 사용자와의 질문/답변
+- Assistant: 각 Issue의 우선순위와 작업 순서를 확인
+- 사용자 응답 대기 및 작업 계획 수립
 
 **학습 포인트**:
+- 사용자 피드백을 구조화된 Issue로 변환하는 과정
+- 버그 vs 기능 개선 vs 리팩토링 구분
 - GitHub Issues를 활용한 프로젝트 관리
-- 개선사항을 구조화된 이슈로 전환
-- 우선순위 설정 (버그 > 기능 > 테스트)
-- Label 활용 (Bug, Feature, UI/UX, Test)
+- 우선순위 설정의 중요성
 
 ---
+
 
 
 ---
