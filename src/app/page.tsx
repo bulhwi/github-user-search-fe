@@ -1,13 +1,16 @@
 'use client'
 
 import { Container, Typography, Box, Grid } from '@mui/material'
-import { useAppSelector } from '@/store/hooks'
+import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import { useSearch } from '@/features/search/hooks/useSearch'
 import { useFilters } from '@/features/filters/hooks/useFilters'
+import { setSort } from '@/store/slices/searchSlice'
 import { SearchBar } from '@/features/search/components/SearchBar'
 import { FilterPanel } from '@/features/filters/components/FilterPanel'
 import { UserList } from '@/features/results/components/UserList'
 import { RateLimitIndicator } from '@/shared/components/RateLimitIndicator'
+import { SortControl } from '@/features/filters/components/SortControl'
+import type { SortOption } from '@/types'
 
 /**
  * Home Page (Template Layer)
@@ -17,6 +20,8 @@ import { RateLimitIndicator } from '@/shared/components/RateLimitIndicator'
  * - 순수하게 컴포넌트 조합과 Layout만 담당
  */
 export default function Home() {
+  const dispatch = useAppDispatch()
+
   // Application Layer: 검색 로직
   const { query, results, loading, error, pagination, handleSearch, loadMore } =
     useSearch()
@@ -27,6 +32,19 @@ export default function Home() {
 
   // Rate Limit 정보 가져오기 (Feature #13)
   const rateLimit = useAppSelector((state) => state.ui.rateLimit)
+
+  // 정렬 정보 가져오기 (Feature #12)
+  const sort = useAppSelector((state) => state.search.sort)
+  const order = useAppSelector((state) => state.search.order)
+
+  // 정렬 변경 핸들러
+  const handleSortChange = (params: { sort: SortOption; order: 'asc' | 'desc' }) => {
+    dispatch(setSort(params))
+    // 정렬 변경 시 재검색
+    if (query) {
+      handleSearch(query)
+    }
+  }
 
   return (
     <Container maxWidth="xl" className="py-8">
@@ -44,8 +62,9 @@ export default function Home() {
         Search GitHub users with advanced filters
       </Typography>
 
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: 4, display: 'flex', gap: 2, alignItems: 'flex-start' }}>
         <SearchBar onSearch={handleSearch} initialValue={query} />
+        <SortControl value={sort} order={order} onChange={handleSortChange} />
       </Box>
 
       <Grid container spacing={3}>

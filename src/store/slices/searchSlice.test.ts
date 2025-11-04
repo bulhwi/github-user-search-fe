@@ -7,7 +7,7 @@ import searchReducer, {
   searchUsers,
   SearchState,
 } from './searchSlice'
-import type { GitHubUser, SearchFilters, SortOption } from '@/types'
+import type { GitHubUser, SearchFilters } from '@/types'
 
 // Mock GitHub API
 jest.mock('@/shared/api/github')
@@ -26,6 +26,7 @@ describe('searchSlice', () => {
       sponsorable: false,
     },
     sort: 'best-match',
+    order: 'desc',
     results: [],
     pagination: {
       page: 1,
@@ -96,20 +97,38 @@ describe('searchSlice', () => {
 
     describe('setSort', () => {
       it('정렬 옵션을 설정해야 한다', () => {
-        const sort: SortOption = 'followers'
-        const actual = searchReducer(initialState, setSort(sort))
+        const actual = searchReducer(
+          initialState,
+          setSort({ sort: 'followers', order: 'desc' })
+        )
         expect(actual.sort).toBe('followers')
+        expect(actual.order).toBe('desc')
+      })
+
+      it('정렬 옵션과 order를 함께 변경할 수 있어야 한다', () => {
+        const actual = searchReducer(
+          initialState,
+          setSort({ sort: 'repositories', order: 'asc' })
+        )
+        expect(actual.sort).toBe('repositories')
+        expect(actual.order).toBe('asc')
       })
 
       it('여러 정렬 옵션을 순차적으로 변경할 수 있어야 한다', () => {
-        let state = searchReducer(initialState, setSort('repositories'))
+        let state = searchReducer(
+          initialState,
+          setSort({ sort: 'repositories', order: 'desc' })
+        )
         expect(state.sort).toBe('repositories')
+        expect(state.order).toBe('desc')
 
-        state = searchReducer(state, setSort('joined'))
+        state = searchReducer(state, setSort({ sort: 'joined', order: 'asc' }))
         expect(state.sort).toBe('joined')
+        expect(state.order).toBe('asc')
 
-        state = searchReducer(state, setSort('best-match'))
+        state = searchReducer(state, setSort({ sort: 'best-match', order: 'desc' }))
         expect(state.sort).toBe('best-match')
+        expect(state.order).toBe('desc')
       })
     })
 
@@ -439,8 +458,12 @@ describe('searchSlice', () => {
 
   describe('Sort 통합', () => {
     it('검색 중에도 정렬 옵션이 유지되어야 한다', () => {
-      let state = searchReducer(initialState, setSort('followers'))
+      let state = searchReducer(
+        initialState,
+        setSort({ sort: 'followers', order: 'asc' })
+      )
       expect(state.sort).toBe('followers')
+      expect(state.order).toBe('asc')
 
       const action = {
         type: searchUsers.fulfilled.type,
@@ -453,6 +476,7 @@ describe('searchSlice', () => {
 
       state = searchReducer(state, action)
       expect(state.sort).toBe('followers') // sort는 유지되어야 함
+      expect(state.order).toBe('asc') // order도 유지되어야 함
     })
   })
 

@@ -13,6 +13,7 @@ export interface SearchState {
   query: string
   filters: SearchFilters
   sort: SortOption
+  order: 'asc' | 'desc'
   results: GitHubUser[]
   pagination: PaginationState
   loading: LoadingState
@@ -32,6 +33,7 @@ const initialState: SearchState = {
     sponsorable: false,
   },
   sort: 'best-match',
+  order: 'desc',
   results: [],
   pagination: {
     page: 1,
@@ -59,7 +61,7 @@ export const searchUsers = createAsyncThunk(
         page: params.page || 1,
         perPage: state.search.pagination.perPage,
         sort: state.search.sort !== 'best-match' ? state.search.sort : undefined,
-        order: 'desc',
+        order: state.search.sort !== 'best-match' ? state.search.order : undefined,
       })
 
       // Rate Limit 정보를 Redux에 저장 (Feature #13)
@@ -112,8 +114,12 @@ const searchSlice = createSlice({
     setFilters: (state, action: PayloadAction<Partial<SearchFilters>>) => {
       state.filters = { ...state.filters, ...action.payload }
     },
-    setSort: (state, action: PayloadAction<SortOption>) => {
-      state.sort = action.payload
+    setSort: (
+      state,
+      action: PayloadAction<{ sort: SortOption; order: 'asc' | 'desc' }>
+    ) => {
+      state.sort = action.payload.sort
+      state.order = action.payload.order
     },
     resetSearch: (state) => {
       state.results = []
