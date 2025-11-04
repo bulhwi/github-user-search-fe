@@ -4145,3 +4145,182 @@ gh issue close 13 --comment "✅ Feature #13 구현 완료"
 4. **TDD 워크플로우**: 테스트 작성 → 컴포넌트 구현 → 테스트 통과 → 리팩토링
 5. **Toast vs Alert**: Toast는 일시적 알림, Alert는 지속적 경고
 
+
+#### 추가 기술 세부사항
+
+##### API Route 분석 (이미 구현되어 있었음)
+**파일**: `src/app/api/search/route.ts` (lines 52-59)
+```typescript
+// 5. Handle rate limiting
+const rateLimit = {
+  limit: parseInt(response.headers.get('X-RateLimit-Limit') || '0'),
+  remaining: parseInt(response.headers.get('X-RateLimit-Remaining') || '0'),
+  reset: parseInt(response.headers.get('X-RateLimit-Reset') || '0'),
+  used: parseInt(response.headers.get('X-RateLimit-Used') || '0'),
+}
+```
+
+**관찰**:
+- API Route가 이미 Rate Limit 헤더를 파싱하여 응답에 포함
+- 클라이언트는 이 정보를 받아서 Redux에 저장만 하면 됨
+- 추가적인 헤더 파싱 로직 불필요
+
+##### 테스트 수정 상세 내역
+
+**문제 1**: Rate Limit 에러가 재시도되어 기존 테스트 실패
+```typescript
+// Before (실패)
+it('API 에러를 처리할 수 있어야 한다', async () => {
+  const errorResponse = { error: 'Rate limit exceeded', status: 429 }
+  mockedHttpClient.get.mockRejectedValueOnce(errorResponse)
+  
+  await expect(githubApi.searchUsers({ query: 'test' })).rejects.toEqual(errorResponse)
+  // ❌ 실패: 재시도 로직으로 인해 1회만 mock하면 부족
+})
+```
+
+**해결 1**: 404 에러로 변경 (재시도하지 않는 에러)
+```typescript
+// After (성공)
+it('API 에러를 처리할 수 있어야 한다', async () => {
+  const errorResponse = { error: 'Not found', status: 404 }
+  mockedHttpClient.get.mockRejectedValueOnce(errorResponse)
+  
+  await expect(githubApi.searchUsers({ query: 'test' })).rejects.toEqual(errorResponse)
+  // ✅ 성공: 404는 재시도하지 않으므로 1회 mock으로 충분
+})
+```
+
+**문제 2**: Rate Limit 재시도 테스트 타임아웃
+```typescript
+// Before (타임아웃)
+it('Rate Limit 에러 시 최대 3회 재시도해야 한다', async () => {
+  mockedHttpClient.get.mockRejectedValue({ error: 'Rate limit exceeded', status: 429 })
+  
+  await expect(githubApi.searchUsers({ query: 'test' })).rejects.toEqual(...)
+  // ❌ 타임아웃: 1000 + 2000 + 4000 = 7000ms > 5000ms (기본 타임아웃)
+})
+```
+
+**해결 2**: 10초 타임아웃 설정
+```typescript
+// After (성공)
+it('Rate Limit 에러 시 최대 3회 재시도해야 한다', async () => {
+  mockedHttpClient.get.mockRejectedValue({ error: 'Rate limit exceeded', status: 429 })
+  
+  await expect(githubApi.searchUsers({ query: 'test' })).rejects.toEqual(...)
+  expect(mockedHttpClient.get).toHaveBeenCalledTimes(4) // 초기 + 3회 재시도
+}, 10000) // ✅ 10초 타임아웃
+```
+
+##### Redux Dispatch 패턴
+
+**동적 import 사용 이유**:
+```typescript
+// searchSlice.ts에서 uiSlice를 import하면 순환 의존성 발생 가능
+// 해결: 동적 import로 필요한 시점에만 로드
+
+if (response.rateLimit) {
+  const { setRateLimit, addToast } = await import('../slices/uiSlice')
+  const { getRateLimitStatus } = await import('@/shared/utils/rateLimit')
+  
+  dispatch(setRateLimit(response.rateLimit))
+  // ...
+}
+```
+
+**장점**:
+1. 순환 의존성 방지
+2. 코드 스플리팅 (필요한 시점에만 로드)
+3. 타입 안전성 유지
+
+##### 실시간 카운트다운 구현
+
+**setInterval 사용**:
+```typescript
+useEffect(() => {
+  if (!rateLimit) return
+
+  const updateResetTime = () => {
+    setResetTimeLeft(formatResetTime(rateLimit.reset))
+  }
+
+  updateResetTime() // 즉시 1회 실행
+  const interval = setInterval(updateResetTime, 1000) // 1초마다 업데이트
+
+  return () => clearInterval(interval) // cleanup
+}, [rateLimit])
+```
+
+**주의사항**:
+- useEffect의 cleanup 함수로 interval 정리 필수
+- rateLimit 변경 시 기존 interval 정리하고 새로 생성
+- 메모리 누수 방지
+
+##### Progress Bar 색상 로직
+
+**3단계 색상 시스템**:
+```typescript
+const progressColor =
+  status === 'ok' ? 'success'       // 초록: 30% 초과
+  : status === 'warning' ? 'warning' // 노랑: 10-30%
+  : status === 'critical' ? 'warning' // 주황: 0-10%
+  : 'error'                          // 빨강: 0% (exceeded)
+```
+
+**왜 critical도 warning 색상?**:
+- MUI LinearProgress는 `success`, `warning`, `error` 3가지 색상만 지원
+- critical은 warning과 같은 노란색 사용
+- Alert 메시지로 추가 경고 표시
+
+##### 파일 생성 요약
+
+**새로 생성된 파일** (4개):
+1. `src/shared/utils/rateLimit.ts` - 210 lines
+2. `src/shared/utils/rateLimit.test.ts` - 250 lines
+3. `src/shared/components/RateLimitIndicator.tsx` - 118 lines
+4. `src/shared/components/RateLimitIndicator.test.tsx` - 230 lines
+
+**수정된 파일** (4개):
+1. `src/shared/api/github.ts` - retryWithBackoff 래핑 추가
+2. `src/shared/api/github.test.ts` - 404 에러 테스트 + Rate Limit 재시도 테스트
+3. `src/store/slices/searchSlice.ts` - Rate Limit Redux dispatch + Toast 알림
+4. `src/app/page.tsx` - RateLimitIndicator 컴포넌트 추가
+
+**총 변경량**:
+- 8 files changed
+- 916 insertions(+)
+- 12 deletions(-)
+
+##### 성능 고려사항
+
+**번들 크기 최적화**:
+- 동적 import로 코드 스플리팅
+- 별도의 라이브러리 추가 없이 순수 TypeScript/React 구현
+- +7 kB만 증가 (매우 경량)
+
+**런타임 성능**:
+- setInterval 1초마다 실행 (부하 적음)
+- formatResetTime()은 단순 계산 (O(1))
+- Progress Bar는 MUI가 최적화
+
+**메모리 관리**:
+- useEffect cleanup으로 interval 정리
+- 컴포넌트 언마운트 시 메모리 누수 없음
+
+##### 최종 검증
+
+**수동 테스트 체크리스트**:
+- [ ] Rate Limit 정보가 UI에 표시되는지 확인
+- [ ] Progress Bar가 남은 비율에 따라 색상 변경되는지 확인
+- [ ] 카운트다운이 1초마다 업데이트되는지 확인
+- [ ] Critical 상태에서 Alert 메시지가 표시되는지 확인
+- [ ] Exceeded 상태에서 Error Alert가 표시되는지 확인
+- [ ] Rate Limit 초과 시 재시도가 동작하는지 확인 (콘솔 로그)
+
+**자동 테스트 결과**:
+- ✅ 378/378 tests passed
+- ✅ TypeScript compilation successful
+- ✅ Production build successful (254 kB)
+- ✅ ESLint warnings only (no errors)
+
