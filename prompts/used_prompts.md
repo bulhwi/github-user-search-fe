@@ -2270,6 +2270,268 @@ cypress/
 
 ---
 
+### 프롬프트 25: README.md 작성 (중간 점검)
+**사용한 도구**: Claude Code
+
+**프롬프트**:
+```
+좋아, 중간점검 차원에서  README.md를 작성해보자.
+로컬 실행방법부터 테스트방법, 구현스펙명세, mermaid를 이용한 시퀀스다이어그램등의
+서비스의 아키텍쳐 시각화, MUI와 Tailwind Css 같이 사용할때 주의할 점등등등 정리해보자
+```
+
+**작업 내용**:
+중간 점검 차원에서 프로젝트 전체를 정리한 상세한 README.md 작성 (총 878줄)
+
+#### 포함된 주요 섹션
+
+**1. 프로젝트 소개**:
+- 프로젝트 설명 및 특징
+- 기술 스택 배지 (Next.js, React, TypeScript, MUI, Redux, Cypress, Jest)
+- Clean Architecture, Feature-based Modularity, TDD, E2E Testing
+
+**2. 주요 기능**:
+- 검색 기능 (기본 검색, 실시간 검색, 검색 히스토리)
+- 필터링 (타입, 검색 필드, 리포지토리 수, 위치, 언어, 생성일, 팔로워, 후원 가능 여부)
+- 결과 표시 (사용자 카드, 무한 스크롤, GitHub 링크)
+- 에러 핸들링 (Rate Limit, 네트워크 에러, 빈 결과)
+
+**3. 시작하기**:
+- 필수 요구사항 (Node.js >= 18, pnpm >= 8)
+- 저장소 클론
+- 의존성 설치
+- 환경 변수 설정 (GitHub Token 발급 방법)
+- 개발 서버 실행
+- 프로덕션 빌드
+
+**4. 프로젝트 구조**:
+- 디렉토리 트리 (src/, cypress/, prompts/)
+- Layer별 파일 구성 (app/, features/, shared/, store/, types/)
+
+**5. 아키텍처** (Mermaid 다이어그램 포함):
+
+**Diagram 1: Clean Architecture Layer 구조**
+```mermaid
+graph TB
+    subgraph "Presentation Layer"
+        A[page.tsx]
+        B[Components]
+    end
+    subgraph "Application Layer"
+        C[Custom Hooks]
+        D[Redux Store]
+    end
+    subgraph "Domain Layer"
+        E[Business Logic]
+        F[Type Definitions]
+    end
+    subgraph "Infrastructure Layer"
+        G[API Routes]
+        H[API Clients]
+        I[External APIs]
+    end
+```
+
+**Diagram 2: 검색 플로우 시퀀스**
+- User → SearchBar → useSearch → Redux Store → QueryBuilder → API Route → GitHub API
+- Success/Rate Limit/Network Error 분기 처리
+
+**Diagram 3: 필터 적용 플로우**
+- User → TypeFilter → useFilters → Redux Store → API Route → 결과 업데이트
+
+**Layer 상세 설명**:
+- Presentation Layer: UI 렌더링, 비즈니스 로직 없음
+- Application Layer: 비즈니스 로직 캡슐화, Custom Hooks
+- Domain Layer: 핵심 비즈니스 로직, Framework 독립적
+- Infrastructure Layer: 외부 시스템 통신, 외부 의존성 격리
+
+**6. 구현 스펙**:
+
+**queryBuilder.ts**:
+- GitHub Search API 쿼리 생성
+- Range Syntax: `repos:10..100` (GitHub 공식 문법)
+- 메서드: type, searchIn, repos, location, language, created, followers, sponsorable
+
+**API Routes**:
+- Next.js API Routes를 GitHub API Proxy로 사용
+- Rate Limit 헤더 파싱, 에러 핸들링, CORS 처리
+
+**Redux Store**:
+- State: query, filters, results, totalCount, currentPage, hasMore, loading, error
+- Actions: setQuery, setFilters, searchUsers (Thunk), loadMore (Thunk), clearResults
+
+**Custom Hooks**:
+- `useSearch()`: 검색 상태 + 검색 액션 캡슐화
+- `useFilters()`: 필터 상태 + 필터 액션 캡슐화
+
+**7. 테스트**:
+
+**테스트 통계**:
+- Unit Tests: 224 tests
+- E2E Tests: 69 scenarios
+- Test Coverage: 주요 비즈니스 로직 100%
+
+**단위 테스트 구조**:
+- queryBuilder.test.ts (52 tests)
+- TypeFilter.test.tsx (16 tests)
+- SearchInFilter.test.tsx (20 tests)
+- ReposFilter.test.tsx (27 tests)
+- UserCard.test.tsx (33 tests)
+- github.test.ts (30 tests)
+- searchSlice.test.ts (46 tests)
+
+**E2E 테스트 구조**:
+- search-flow.cy.ts (20 tests): 초기 렌더링, 검색 입력, 결과 표시, Loading, 빈 결과
+- filter-flow.cy.ts (23 tests): TypeFilter, SearchInFilter, ReposFilter, 복합 필터
+- error-handling.cy.ts (26 tests): Rate Limit, 네트워크 에러, 서버 에러, 에러 복구
+
+**테스트 실행 명령어**:
+```bash
+pnpm test                   # 단위 테스트
+pnpm test:watch             # Watch 모드
+pnpm test:e2e               # Cypress GUI
+pnpm test:e2e:headless      # Cypress Headless
+pnpm test:all               # Unit + E2E
+```
+
+**Custom Cypress Commands**:
+- `cy.visitHome()`: 홈 페이지 방문
+- `cy.searchUsers(query)`: 사용자 검색
+- `cy.waitForResults()`: 검색 결과 대기
+- `cy.interceptGitHubAPI(fixture)`: API Mock
+
+**8. 스타일링 가이드 (MUI + Tailwind CSS)**:
+
+**⚠️ 주의사항**:
+
+1. **CSS 충돌 방지**:
+   - MUI의 `sx` prop이 Tailwind 클래스보다 우선순위 높음
+   - Tailwind의 `@layer` 사용 시 MUI 스타일과 충돌 가능
+
+2. **클래스 우선순위**:
+   ```tsx
+   // ❌ 잘못된 예: Tailwind가 MUI를 덮어씀
+   <Button className="bg-blue-500" sx={{ bgcolor: 'primary.main' }}>
+
+   // ✅ 올바른 예: MUI sx만 사용
+   <Button sx={{ bgcolor: 'primary.main' }}>
+
+   // ✅ 올바른 예: Tailwind만 사용
+   <button className="bg-blue-500 hover:bg-blue-700">
+   ```
+
+3. **spacing 단위**:
+   - MUI: `sx={{ p: 2 }}` → `theme.spacing(2)` = 16px
+   - Tailwind: `p-2` → 0.5rem = 8px
+   - 혼용 시 픽셀 값 차이 주의
+
+**권장 사용 패턴**:
+- MUI 컴포넌트: `sx` prop 사용
+- Tailwind CSS: 레이아웃 및 유틸리티 클래스
+- 혼용 패턴: 레이아웃은 Tailwind, 컴포넌트는 MUI
+
+**Tailwind 설정 (tailwind.config.ts)**:
+```typescript
+export default {
+  important: '#__next',      // MUI와 충돌 방지
+  corePlugins: {
+    preflight: false,        // MUI의 CssBaseline 사용
+  },
+}
+```
+
+**9. 환경 변수**:
+```env
+GITHUB_TOKEN=your_github_personal_access_token
+NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
+```
+
+**GitHub Token 권한 및 Rate Limit**:
+- 필요한 권한: `public_repo` 또는 `repo`
+- Token 없음: 60 requests/hour (IP 기준)
+- Token 있음: 5,000 requests/hour (User 기준)
+
+**10. API 문서**:
+- GitHub Search Users API 공식 문서
+- 엔드포인트: `GET https://api.github.com/search/users`
+- 쿼리 파라미터: q, sort, order, per_page, page
+- 쿼리 한정자: type, in, repos, location, language, created, followers, is:sponsorable
+
+**11. 트러블슈팅**:
+
+**주요 문제 및 해결 방법**:
+1. **Rate Limit 초과**:
+   - `.env.local`에 `GITHUB_TOKEN` 추가
+   - Rate Limit 리셋 시간까지 대기
+
+2. **TypeScript 컴파일 에러**:
+   - `pnpm type-check` 실행
+   - `rm -rf node_modules .next && pnpm install`
+
+3. **MUI 스타일 적용 안 됨**:
+   - `app/providers.tsx`에서 ThemeProvider 확인
+   - Tailwind `preflight: false` 설정 확인
+
+4. **Cypress 테스트 실패**:
+   - 개발 서버 실행 확인 (`pnpm dev`)
+   - Cypress 캐시 삭제 (`npx cypress cache clear`)
+
+5. **API 호출 CORS 에러**:
+   - Next.js API Routes를 Proxy로 사용하여 CORS 문제 없음
+
+**12. 추가 자료**:
+- Next.js, MUI, Redux Toolkit, Cypress 공식 문서
+- PRD.md, CLAUDE.md, used_prompts.md
+
+#### Git 커밋
+**커밋 메시지**:
+```
+docs: create comprehensive README.md
+
+상세한 프로젝트 문서 작성:
+- 프로젝트 소개 및 주요 기능
+- 기술 스택 및 시작하기
+- 프로젝트 구조
+- 아키텍처 (Mermaid 다이어그램 3개)
+- 구현 스펙
+- 테스트 (224 Unit + 69 E2E)
+- 스타일링 가이드 (MUI + Tailwind CSS)
+- 환경 변수, API 문서, 트러블슈팅
+```
+
+**Commit**: a4f36d2
+
+#### 결과
+**README.md 통계**:
+- 총 878줄
+- 12개 주요 섹션
+- 3개 Mermaid 다이어그램
+- 다수의 코드 예시 및 명령어
+
+**Mermaid 다이어그램**:
+1. Clean Architecture Layer 구조도
+2. 검색 플로우 시퀀스 다이어그램 (Success/Rate Limit/Network Error 분기)
+3. 필터 적용 플로우 시퀀스 다이어그램
+
+**문서 특징**:
+- 📋 체계적인 목차 구조
+- 🎨 실행 가능한 코드 예시
+- ⚠️ 주의사항 및 트러블슈팅
+- 🔗 외부 문서 링크
+- 📊 테스트 통계 및 구조
+
+**결과**:
+- ✅ 상세한 README.md 작성 완료 (878줄)
+- ✅ 3개 Mermaid 다이어그램으로 아키텍처 시각화
+- ✅ 로컬 실행 방법 가이드
+- ✅ 테스트 방법 및 구조 설명
+- ✅ 구현 스펙 명세
+- ✅ MUI + Tailwind CSS 스타일링 가이드
+- ✅ 트러블슈팅 섹션
+- ✅ 중간 점검 문서화 완료
+
+---
+
 ## 작성 가이드
 
 각 프롬프트 기록은 다음 형식을 따라 작성합니다:
