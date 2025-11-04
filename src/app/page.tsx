@@ -53,8 +53,8 @@ export default function Home() {
   const handleReset = () => {
     dispatch(resetSearch())
     dispatch(clearFilters())
-    dispatch(setQuery('followers:>1000'))
-    handleSearch('followers:>1000')
+    dispatch(setQuery('followers:>0'))
+    handleSearch('followers:>0')
   }
 
   return (
