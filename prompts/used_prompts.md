@@ -1889,6 +1889,124 @@ Feature #3 구현: 리포지토리 수 검색 (repos:>n, repos:<n)
 
 ---
 
+### 프롬프트 23: 리포지토리 필터 버그 수정 (GitHub Range Syntax)
+**사용한 도구**: Claude Code
+
+**프롬프트**:
+```
+로컬 브라우저에서 테스트해보면 min:1, max:3으로 세팅하면 api call이 나가고
+조회 결과값중 아무거나 클릭해서 실제 repo를 가보면 repo의 개수가 3개 이상인것들이 대부분이야
+이부분 확인해봐
+```
+
+**작업 내용**:
+사용자 버그 리포트를 받아 리포지토리 필터가 제대로 작동하지 않는 문제 수정
+
+#### 1. 문제 분석
+**증상**:
+- 리포지토리 필터를 min:1, max:3으로 설정
+- 검색 결과에 3개 이상의 리포지토리를 가진 사용자가 나타남
+- 필터가 제대로 작동하지 않음
+
+**원인 파악**:
+- `queryBuilder.ts`가 잘못된 쿼리 문법 생성
+- 기존: `repos:>=1 repos:<=3` (GitHub API가 제대로 해석 못함)
+- 기존: `followers:>=100 followers:<=1000` (동일 문제)
+
+#### 2. 해결 방법
+**GitHub API 공식 Range Syntax 적용**:
+- 수정: `repos:1..3` (정확한 범위 문법)
+- 수정: `followers:100..1000` (정확한 범위 문법)
+
+**조건부 로직**:
+```typescript
+repos(min?: number, max?: number): this {
+  if (min !== undefined && max !== undefined) {
+    // 둘 다 있으면 범위 문법 사용: repos:min..max
+    this.qualifiers.push(`repos:${min}..${max}`)
+  } else if (min !== undefined) {
+    // min만 있으면: repos:>=min
+    this.qualifiers.push(`repos:>=${min}`)
+  } else if (max !== undefined) {
+    // max만 있으면: repos:<=max
+    this.qualifiers.push(`repos:<=${max}`)
+  }
+  return this
+}
+```
+
+**동일 로직을 followers() 메서드에도 적용**
+
+#### 3. 디버그 로깅 추가
+**API Route에 디버그 로그 추가**:
+```typescript
+// 실제 전송되는 쿼리 확인
+console.log('[GitHub API] Search query:', query)
+console.log('[GitHub API] Full URL:', githubUrl.toString())
+
+// 검색 결과의 repo 개수 샘플 확인
+if (data.items && data.items.length > 0) {
+  console.log('[GitHub API] Sample results (first 3):')
+  data.items.slice(0, 3).forEach((user: any) => {
+    console.log(`  - ${user.login}: ${user.public_repos} repos`)
+  })
+}
+```
+
+#### 4. 테스트 업데이트
+**queryBuilder.test.ts 수정**:
+- Feature #3 테스트: `'john repos:10..100'` (변경)
+- Feature #7 테스트: `'john followers:100..1000'` (변경)
+- 복합 쿼리 테스트: 범위 문법 기대값 수정
+
+**테스트 결과**:
+- ✅ queryBuilder.test.ts: 52 tests passed
+- ✅ 전체 테스트 스위트: 224 tests passed
+
+#### 5. Git 커밋
+**커밋 메시지**:
+```
+fix: use GitHub range syntax for repos and followers filters
+
+## Problem (User-Reported Bug)
+When setting min:1, max:3 for repository count filter, search results
+included users with MORE than 3 repositories.
+
+## Root Cause
+queryBuilder.ts was generating:
+- `repos:>=1 repos:<=3` (incorrect)
+- `followers:>=100 followers:<=1000` (incorrect)
+
+## Solution
+Changed to use GitHub's preferred range syntax:
+- `repos:1..3` (correct)
+- `followers:100..1000` (correct)
+
+✅ queryBuilder.test.ts: 52 tests passed
+✅ Full test suite: 224 tests passed
+```
+
+**Commit**: 2a6f31e
+
+#### 수정 파일
+**수정** (3개):
+1. `src/features/search/utils/queryBuilder.ts` - repos(), followers() 메서드 로직 수정
+2. `src/features/search/utils/queryBuilder.test.ts` - 테스트 기대값 업데이트
+3. `src/app/api/search/route.ts` - 디버그 로깅 추가
+
+**결과**:
+- ✅ 리포지토리 필터 버그 수정
+- ✅ 팔로워 필터도 동일하게 수정 (예방)
+- ✅ GitHub API Range Syntax 적용
+- ✅ 52개 테스트 통과
+- ✅ 전체 224개 테스트 통과
+- ✅ 사용자 로컬 테스트로 검증 완료
+
+#### 참고 자료
+- GitHub Search API Range Syntax: https://docs.github.com/en/search-github/searching-on-github/searching-users
+
+---
+
 ## 작성 가이드
 
 각 프롬프트 기록은 다음 형식을 따라 작성합니다:
