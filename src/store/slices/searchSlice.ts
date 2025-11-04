@@ -18,6 +18,7 @@ export interface SearchState {
   pagination: PaginationState
   loading: LoadingState
   error: string | null
+  incompleteResults: boolean
 }
 
 const initialState: SearchState = {
@@ -43,6 +44,7 @@ const initialState: SearchState = {
   },
   loading: 'idle',
   error: null,
+  incompleteResults: false,
 }
 
 // Async Thunks
@@ -142,7 +144,7 @@ const searchSlice = createSlice({
       })
       .addCase(searchUsers.fulfilled, (state, action) => {
         state.loading = 'succeeded'
-        const { items, total_count, page } = action.payload
+        const { items, total_count, incomplete_results, page } = action.payload
 
         if (page === 1) {
           state.results = items
@@ -156,6 +158,9 @@ const searchSlice = createSlice({
           totalCount: total_count,
           hasMore: state.results.length < total_count,
         }
+
+        // Feature #17: Incomplete results 처리
+        state.incompleteResults = incomplete_results || false
       })
       .addCase(searchUsers.rejected, (state, action) => {
         state.loading = 'failed'

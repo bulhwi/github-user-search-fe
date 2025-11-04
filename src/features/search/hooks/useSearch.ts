@@ -12,7 +12,7 @@ import { searchUsers, setQuery } from '@/store/slices/searchSlice'
  */
 export function useSearch() {
   const dispatch = useAppDispatch()
-  const { query, results, loading, error, pagination } = useAppSelector(
+  const { query, results, loading, error, pagination, incompleteResults } = useAppSelector(
     (state) => state.search
   )
 
@@ -41,13 +41,22 @@ export function useSearch() {
     }
   }, [dispatch, pagination.page, pagination.hasMore, loading])
 
+  // 재시도 (Feature #17: Retry button)
+  const retry = useCallback(() => {
+    if (query) {
+      dispatch(searchUsers({ query, page: 1 }))
+    }
+  }, [dispatch, query])
+
   return {
     query,
     results,
     loading,
     error,
     pagination,
+    incompleteResults,
     handleSearch,
     loadMore,
+    retry,
   }
 }

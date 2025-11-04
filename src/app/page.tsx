@@ -24,7 +24,7 @@ export default function Home() {
   const dispatch = useAppDispatch()
 
   // Application Layer: 검색 로직
-  const { query, results, loading, error, pagination, handleSearch, loadMore } =
+  const { query, results, loading, error, pagination, incompleteResults, handleSearch, loadMore, retry } =
     useSearch()
 
   // Application Layer: 필터 로직
@@ -101,6 +101,8 @@ export default function Home() {
             hasMore={pagination.hasMore}
             onLoadMore={loadMore}
             totalCount={pagination.totalCount}
+            incompleteResults={incompleteResults}
+            onRetry={retry}
           />
         </Grid>
       </Grid>

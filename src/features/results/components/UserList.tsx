@@ -1,6 +1,7 @@
 'use client'
 
-import { Grid, Typography, Box, CircularProgress } from '@mui/material'
+import { Grid, Typography, Box, CircularProgress, Button, Alert } from '@mui/material'
+import RefreshIcon from '@mui/icons-material/Refresh'
 import { UserCard } from '@/features/results/components/UserCard'
 import { InfiniteScroll } from '@/features/results/components/InfiniteScroll'
 import type { GitHubUser, LoadingState } from '@/types'
@@ -12,6 +13,8 @@ export interface UserListProps {
   hasMore?: boolean
   onLoadMore?: () => void
   totalCount?: number
+  incompleteResults?: boolean
+  onRetry?: () => void
   className?: string
 }
 
@@ -22,6 +25,8 @@ export function UserList({
   hasMore = false,
   onLoadMore,
   totalCount,
+  incompleteResults = false,
+  onRetry,
   className,
 }: UserListProps) {
   // 초기 로딩 중 (아직 결과가 없을 때)
@@ -56,11 +61,23 @@ export function UserList({
         <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
           {error}
         </Typography>
-        {isRateLimitError && (
+        {isRateLimitError ? (
           <Typography variant="body2" color="text.secondary">
             Please try again later or check the rate limit indicator above for
             reset time.
           </Typography>
+        ) : (
+          onRetry && (
+            <Button
+              variant="contained"
+              color="primary"
+              startIcon={<RefreshIcon />}
+              onClick={onRetry}
+              sx={{ mt: 2 }}
+            >
+              Try Again
+            </Button>
+          )
         )}
       </Box>
     )
@@ -83,6 +100,14 @@ export function UserList({
   // 결과 표시 + 무한 스크롤
   return (
     <Box className={className} data-testid="user-list">
+      {/* Incomplete results 경고 */}
+      {incompleteResults && (
+        <Alert severity="warning" sx={{ mb: 2 }}>
+          Incomplete results: The search results may be partial due to server
+          load or rate limiting. Please try again later for complete results.
+        </Alert>
+      )}
+
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
         {totalCount !== undefined ? totalCount : users.length} results
       </Typography>
