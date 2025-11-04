@@ -95,9 +95,9 @@ describe('SearchQueryBuilder', () => {
       expect(builder.build()).toBe('john repos:<=100')
     })
 
-    it('범위를 추가해야 한다', () => {
+    it('범위를 추가해야 한다 (범위 문법 사용)', () => {
       const builder = new SearchQueryBuilder('john').repos(10, 100)
-      expect(builder.build()).toBe('john repos:>=10 repos:<=100')
+      expect(builder.build()).toBe('john repos:10..100')
     })
 
     it('0을 최소값으로 처리해야 한다', () => {
@@ -201,7 +201,7 @@ describe('SearchQueryBuilder', () => {
 
     it('범위를 추가해야 한다', () => {
       const builder = new SearchQueryBuilder('john').followers(100, 1000)
-      expect(builder.build()).toBe('john followers:>=100 followers:<=1000')
+      expect(builder.build()).toBe('john followers:100..1000')
     })
 
     it('0을 최소값으로 처리해야 한다', () => {
@@ -252,13 +252,11 @@ describe('SearchQueryBuilder', () => {
       expect(result).toContain('react')
       expect(result).toContain('type:user')
       expect(result).toContain('in:name,email')
-      expect(result).toContain('repos:>=10')
-      expect(result).toContain('repos:<=100')
+      expect(result).toContain('repos:10..100')
       expect(result).toContain('location:"Korea"')
       expect(result).toContain('language:javascript')
       expect(result).toContain('created:>2020-01-01')
-      expect(result).toContain('followers:>=100')
-      expect(result).toContain('followers:<=1000')
+      expect(result).toContain('followers:100..1000')
       expect(result).toContain('is:sponsorable')
     })
 
@@ -295,8 +293,7 @@ describe('SearchQueryBuilder', () => {
       expect(query).toContain('in:login,name')
       expect(query).toContain('location:"Seoul"')
       expect(query).toContain('language:javascript')
-      expect(query).toContain('repos:>=10')
-      expect(query).toContain('repos:<=100')
+      expect(query).toContain('repos:10..100')
       expect(query).toContain('followers:>=100')
       expect(query).toContain('created:>2020-01-01')
       expect(query).toContain('is:sponsorable')

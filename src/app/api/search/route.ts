@@ -28,6 +28,10 @@ export async function GET(request: NextRequest) {
     githubUrl.searchParams.set('page', page)
     githubUrl.searchParams.set('per_page', perPage)
 
+    // Debug: Log the actual query being sent
+    console.log('[GitHub API] Search query:', query)
+    console.log('[GitHub API] Full URL:', githubUrl.toString())
+
     // 4. Call GitHub API with Authorization header
     const githubToken = process.env.GITHUB_TOKEN
     if (!githubToken) {
@@ -79,6 +83,14 @@ export async function GET(request: NextRequest) {
 
     // 6. Parse and return response
     const data = await response.json()
+
+    // Debug: Log sample of results with repo counts
+    if (data.items && data.items.length > 0) {
+      console.log('[GitHub API] Sample results (first 3):')
+      data.items.slice(0, 3).forEach((user: any) => {
+        console.log(`  - ${user.login}: ${user.public_repos} repos`)
+      })
+    }
 
     return NextResponse.json({
       ...data,

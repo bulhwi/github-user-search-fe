@@ -38,10 +38,14 @@ export class SearchQueryBuilder {
    * Feature #3: 리포지토리 수
    */
   repos(min?: number, max?: number): this {
-    if (min !== undefined) {
+    if (min !== undefined && max !== undefined) {
+      // 둘 다 있으면 범위 문법 사용: repos:min..max
+      this.qualifiers.push(`repos:${min}..${max}`)
+    } else if (min !== undefined) {
+      // min만 있으면: repos:>=min
       this.qualifiers.push(`repos:>=${min}`)
-    }
-    if (max !== undefined) {
+    } else if (max !== undefined) {
+      // max만 있으면: repos:<=max
       this.qualifiers.push(`repos:<=${max}`)
     }
     return this
@@ -84,10 +88,14 @@ export class SearchQueryBuilder {
    * Feature #7: 팔로워 수
    */
   followers(min?: number, max?: number): this {
-    if (min !== undefined) {
+    if (min !== undefined && max !== undefined) {
+      // 둘 다 있으면 범위 문법 사용: followers:min..max
+      this.qualifiers.push(`followers:${min}..${max}`)
+    } else if (min !== undefined) {
+      // min만 있으면: followers:>=min
       this.qualifiers.push(`followers:>=${min}`)
-    }
-    if (max !== undefined) {
+    } else if (max !== undefined) {
+      // max만 있으면: followers:<=max
       this.qualifiers.push(`followers:<=${max}`)
     }
     return this
