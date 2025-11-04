@@ -2,6 +2,13 @@ import { render, screen } from '@testing-library/react'
 import { UserCard } from './UserCard'
 import type { GitHubUser } from '@/types'
 
+// Mock UserAvatar (Feature #10: Canvas + WASM)
+jest.mock('./UserAvatar', () => ({
+  UserAvatar: ({ src, alt, size }: { src: string; alt: string; size?: number }) => (
+    <div data-testid="user-avatar" data-src={src} data-alt={alt} data-size={size} />
+  ),
+}))
+
 describe('UserCard', () => {
   const mockUser: GitHubUser = {
     id: 1,
@@ -48,12 +55,14 @@ describe('UserCard', () => {
     it('아바타 이미지가 올바른 src와 alt를 가져야 한다', () => {
       render(<UserCard user={mockUser} />)
 
-      const avatar = screen.getByAltText('testuser')
+      const avatar = screen.getByTestId('user-avatar')
       expect(avatar).toBeInTheDocument()
       expect(avatar).toHaveAttribute(
-        'src',
+        'data-src',
         'https://avatars.githubusercontent.com/u/1'
       )
+      expect(avatar).toHaveAttribute('data-alt', 'testuser')
+      expect(avatar).toHaveAttribute('data-size', '64')
     })
 
     it('GitHub 프로필로 이동하는 링크가 있어야 한다', () => {
@@ -293,8 +302,9 @@ describe('UserCard', () => {
     it('아바타 이미지가 접근 가능해야 한다', () => {
       render(<UserCard user={mockUser} />)
 
-      const avatar = screen.getByAltText('testuser')
+      const avatar = screen.getByTestId('user-avatar')
       expect(avatar).toBeInTheDocument()
+      expect(avatar).toHaveAttribute('data-alt', 'testuser')
     })
   })
 
@@ -370,8 +380,8 @@ describe('UserCard', () => {
 
       render(<UserCard user={userWithInvalidAvatar} />)
 
-      const avatar = screen.getByAltText('testuser')
-      expect(avatar).toHaveAttribute('src', 'invalid-url')
+      const avatar = screen.getByTestId('user-avatar')
+      expect(avatar).toHaveAttribute('data-src', 'invalid-url')
     })
 
     it('잘못된 profile URL이어도 렌더링되어야 한다', () => {

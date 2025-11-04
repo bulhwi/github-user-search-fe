@@ -3,7 +3,6 @@
 import {
   Card,
   CardContent,
-  Avatar,
   Typography,
   Box,
   Chip,
@@ -11,6 +10,7 @@ import {
 } from '@mui/material'
 import LocationOnIcon from '@mui/icons-material/LocationOn'
 import BusinessIcon from '@mui/icons-material/Business'
+import { UserAvatar } from './UserAvatar'
 import type { GitHubUser } from '@/types'
 
 export interface UserCardProps {
@@ -25,10 +25,10 @@ export function UserCard({ user, className }: UserCardProps) {
     <Card className={className} sx={{ height: '100%' }} data-testid="user-card">
       <CardContent>
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-          <Avatar
+          <UserAvatar
             src={user.avatar_url}
             alt={user.login}
-            sx={{ width: 64, height: 64 }}
+            size={64}
           />
           <Box sx={{ flex: 1, minWidth: 0 }}>
             <MuiLink
