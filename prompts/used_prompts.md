@@ -2833,3 +2833,96 @@ Co-Authored-By: Claude <noreply@anthropic.com>"
 - [구현된 기능이나 변경사항 1]
 - [구현된 기능이나 변경사항 2]
 ```
+### 프롬프트 28: Feature #5 사용 언어 검색 구현
+**사용한 도구**: Claude Code
+**날짜**: 2025-11-04
+
+#### 요청 내용
+```
+5번 진행
+```
+
+#### 작업 내용
+
+**1. 인기 언어 상수 정의**
+- **파일**: `src/features/filters/constants/languages.ts`
+- 20개 인기 언어: JavaScript, TypeScript, Python, Java, C++, C#, Go, Rust, Ruby, PHP, Swift, Kotlin, C, Shell, HTML, CSS, Dart, Scala, R, Objective-C
+
+**2. Query Builder**
+- `language()` 메서드 이미 구현됨 (line 67-72)
+- 4개 단위 테스트 이미 존재
+
+**3. LanguageFilter 컴포넌트 구현 (TDD)**
+- **파일**:
+  - `src/features/filters/components/LanguageFilter.tsx`
+  - `src/features/filters/components/LanguageFilter.test.tsx`
+
+- **구현**: MUI Autocomplete + freeSolo
+```typescript
+<Autocomplete
+  freeSolo
+  options={POPULAR_LANGUAGES}
+  value={value}
+  onChange={handleChange}
+  onInputChange={handleInputChange}
+  renderInput={(params) => (
+    <TextField
+      {...params}
+      label="Language"
+      placeholder="e.g. JavaScript, Python"
+      helperText="Filter by programming language"
+    />
+  )}
+/>
+```
+
+- **테스트**: 13개 시나리오
+  - 렌더링 (기본값, 초기값, 도움말, className)
+  - 사용자 상호작용 (입력, 삭제, 인기 언어 선택)
+  - Autocomplete 기능 (필터링, 대소문자 무시)
+  - Edge Cases (커스텀 언어 입력)
+  - 접근성
+
+**4. Redux & Hook 통합**
+- Redux: searchSlice.ts에 language 이미 정의됨
+- useFilters: setLanguage 이미 구현됨
+
+**5. UI 통합**
+- FilterPanel + page.tsx 업데이트
+- setLanguage 연결
+
+**6. Cypress E2E 테스트** (9개 시나리오)
+- Language 필터 표시 및 입력
+- 인기 언어 Autocomplete 선택
+- 언어 변경 및 삭제
+- 대소문자 구분 없이 검색
+- 다른 필터와 조합
+
+**Commit**:
+```bash
+git commit -m "feat: implement language filter with Autocomplete"
+```
+
+#### 결과
+**구현 완료**:
+- ✅ 20개 인기 언어 상수
+- ✅ LanguageFilter 컴포넌트 (Autocomplete + freeSolo)
+- ✅ 13개 단위 테스트
+- ✅ FilterPanel + page.tsx 통합
+- ✅ 9개 E2E 테스트 시나리오
+
+**테스트 통계**:
+- Unit Tests: 261 passed (248 → 261, +13)
+- E2E Tests: 86 scenarios (77 → 86, +9)
+- TypeScript: 컴파일 성공
+- Build: 189 kB First Load JS (+17 kB, Autocomplete 추가로 인한 증가)
+
+**Issue 완료**:
+- ✅ Issue #5 Closed
+
+**개선 사항**:
+- Autocomplete로 사용자 경험 향상
+- 20개 인기 언어 제공으로 편의성 증대
+- freeSolo로 커스텀 언어 입력 가능
+
+---
