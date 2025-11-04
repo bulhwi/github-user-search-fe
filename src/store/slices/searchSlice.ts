@@ -48,7 +48,7 @@ export const searchUsers = createAsyncThunk(
   'search/searchUsers',
   async (
     params: { query: string; page?: number },
-    { getState, rejectWithValue }
+    { getState, rejectWithValue, dispatch }
   ) => {
     try {
       const state = getState() as { search: SearchState }
@@ -61,6 +61,35 @@ export const searchUsers = createAsyncThunk(
         sort: state.search.sort !== 'best-match' ? state.search.sort : undefined,
         order: 'desc',
       })
+
+      // Rate Limit 정보를 Redux에 저장 (Feature #13)
+      if (response.rateLimit) {
+        const { setRateLimit, addToast } = await import('../slices/uiSlice')
+        const { getRateLimitStatus } = await import(
+          '@/shared/utils/rateLimit'
+        )
+
+        dispatch(setRateLimit(response.rateLimit))
+
+        // Rate Limit 경고 Toast 표시
+        const status = getRateLimitStatus(response.rateLimit)
+
+        if (status === 'exceeded') {
+          dispatch(
+            addToast({
+              message: 'Rate limit exceeded. Please wait for reset.',
+              severity: 'error',
+            })
+          )
+        } else if (status === 'critical') {
+          dispatch(
+            addToast({
+              message: `Only ${response.rateLimit.remaining} API requests remaining!`,
+              severity: 'warning',
+            })
+          )
+        }
+      }
 
       return response
     } catch (error) {

@@ -1,11 +1,13 @@
 'use client'
 
 import { Container, Typography, Box, Grid } from '@mui/material'
+import { useAppSelector } from '@/store/hooks'
 import { useSearch } from '@/features/search/hooks/useSearch'
 import { useFilters } from '@/features/filters/hooks/useFilters'
 import { SearchBar } from '@/features/search/components/SearchBar'
 import { FilterPanel } from '@/features/filters/components/FilterPanel'
 import { UserList } from '@/features/results/components/UserList'
+import { RateLimitIndicator } from '@/shared/components/RateLimitIndicator'
 
 /**
  * Home Page (Template Layer)
@@ -23,8 +25,18 @@ export default function Home() {
   const { filters, setType, setSearchIn, setRepos, setLocation, setLanguage, setCreated, setFollowers, setSponsorable } =
     useFilters()
 
+  // Rate Limit 정보 가져오기 (Feature #13)
+  const rateLimit = useAppSelector((state) => state.ui.rateLimit)
+
   return (
     <Container maxWidth="xl" className="py-8">
+      {/* Rate Limit Indicator (Feature #13) */}
+      {rateLimit && (
+        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
+          <RateLimitIndicator rateLimit={rateLimit} />
+        </Box>
+      )}
+
       <Typography variant="h3" component="h1" gutterBottom>
         GitHub User Search
       </Typography>

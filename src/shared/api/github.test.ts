@@ -332,8 +332,8 @@ describe('GitHubApiClient', () => {
     describe('실패 케이스', () => {
       it('API 에러를 처리할 수 있어야 한다', async () => {
         const errorResponse = {
-          error: 'Rate limit exceeded',
-          status: 429,
+          error: 'Not found',
+          status: 404,
         }
 
         mockedHttpClient.get.mockRejectedValueOnce(errorResponse)
@@ -342,6 +342,26 @@ describe('GitHubApiClient', () => {
           errorResponse
         )
       })
+
+      it(
+        'Rate Limit 에러 시 최대 3회 재시도해야 한다',
+        async () => {
+          const errorResponse = {
+            error: 'Rate limit exceeded',
+            status: 429,
+          }
+
+          // 초기 시도 + 3회 재시도 = 총 4회 mock
+          mockedHttpClient.get.mockRejectedValue(errorResponse)
+
+          await expect(githubApi.searchUsers({ query: 'test' })).rejects.toEqual(
+            errorResponse
+          )
+
+          expect(mockedHttpClient.get).toHaveBeenCalledTimes(4) // 초기 + 3회 재시도
+        },
+        10000
+      ) // 10초 타임아웃 (1000 + 2000 + 4000 = 7000ms + 여유)
 
       it('네트워크 에러를 처리할 수 있어야 한다', async () => {
         mockedHttpClient.get.mockRejectedValueOnce(new Error('Network error'))
