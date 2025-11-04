@@ -6,7 +6,7 @@ import searchReducer, {
   clearFilters,
   searchUsers,
   SearchState,
-} from './searchSlice'
+} from '../searchSlice'
 import type { GitHubUser, SearchFilters } from '@/types'
 
 // Mock GitHub API
@@ -34,6 +34,7 @@ describe('searchSlice', () => {
       totalCount: 0,
       hasMore: false,
     },
+    incompleteResults: false,
     loading: 'idle',
     error: null,
   }

@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { LanguageFilter } from './LanguageFilter'
+import { LanguageFilter } from '../LanguageFilter'
 
 describe('LanguageFilter', () => {
   describe('렌더링 - 성공 케이스', () => {

@@ -1,4 +1,4 @@
-import { SearchQueryBuilder, buildSearchQuery } from './queryBuilder'
+import { SearchQueryBuilder, buildSearchQuery } from '../queryBuilder'
 import type { SearchFilters } from '@/types'
 
 describe('SearchQueryBuilder', () => {

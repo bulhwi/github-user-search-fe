@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { ThemeToggle } from './ThemeToggle'
+import { ThemeToggle } from '../ThemeToggle'
 
 // Mock useTheme hook
 const mockToggleTheme = jest.fn()

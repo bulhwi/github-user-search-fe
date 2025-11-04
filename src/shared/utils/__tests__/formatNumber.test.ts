@@ -1,4 +1,4 @@
-import { formatNumber } from './formatNumber'
+import { formatNumber } from '../formatNumber'
 
 describe('formatNumber', () => {
   describe('작은 숫자 (< 1000)', () => {

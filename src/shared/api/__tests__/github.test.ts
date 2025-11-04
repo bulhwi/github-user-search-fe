@@ -1,9 +1,9 @@
-import { githubApi, SearchUsersParams } from './github'
-import { httpClient } from './client'
+import { githubApi, SearchUsersParams } from '../github'
+import { httpClient } from '../client'
 import type { GitHubUser } from '@/types'
 
 // Mock httpClient
-jest.mock('./client')
+jest.mock('../client')
 const mockedHttpClient = httpClient as jest.Mocked<typeof httpClient>
 
 describe('GitHubApiClient', () => {

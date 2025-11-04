@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import { RateLimitIndicator } from './RateLimitIndicator'
+import { RateLimitIndicator } from '../RateLimitIndicator'
 import type { RateLimit } from '@/types'
 
 describe('RateLimitIndicator', () => {

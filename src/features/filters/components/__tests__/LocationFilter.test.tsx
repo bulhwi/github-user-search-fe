@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { LocationFilter } from './LocationFilter'
+import { LocationFilter } from '../LocationFilter'
 
 describe('LocationFilter', () => {
   describe('렌더링 - 성공 케이스', () => {

@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
-import { ReposFilter } from './ReposFilter'
+import { ReposFilter } from '../ReposFilter'
 import type { RangeFilter } from '@/types'
 
 // Controlled wrapper for testing

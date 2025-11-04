@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
-import { FollowersFilter } from './FollowersFilter'
+import { FollowersFilter } from '../FollowersFilter'
 import type { RangeFilter } from '@/types'
 
 // Controlled component for testing

@@ -1,5 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react'
-import { UserAvatar } from './UserAvatar'
+import { UserAvatar } from '../UserAvatar'
 import * as imageOptimizer from '@/shared/utils/imageOptimizer'
 
 // Mock imageOptimizer

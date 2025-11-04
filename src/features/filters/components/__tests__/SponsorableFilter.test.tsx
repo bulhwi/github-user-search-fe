@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
-import { SponsorableFilter } from './SponsorableFilter'
+import { SponsorableFilter } from '../SponsorableFilter'
 
 // Controlled component for testing
 function ControlledSponsorableFilter() {

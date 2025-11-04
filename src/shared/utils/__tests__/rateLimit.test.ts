@@ -8,7 +8,7 @@ import {
   getRateLimitStatus,
   formatResetTime,
   type RateLimitInfo,
-} from './rateLimit'
+} from '../rateLimit'
 
 describe('rateLimit utils', () => {
   describe('isRateLimitError', () => {

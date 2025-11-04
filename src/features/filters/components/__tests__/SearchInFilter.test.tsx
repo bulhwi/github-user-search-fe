@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { SearchInFilter } from './SearchInFilter'
+import { SearchInFilter } from '../SearchInFilter'
 
 describe('SearchInFilter', () => {
   describe('렌더링 - 성공 케이스', () => {

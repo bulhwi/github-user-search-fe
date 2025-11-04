@@ -1,9 +1,9 @@
 import { render, screen } from '@testing-library/react'
-import { UserCard } from './UserCard'
+import { UserCard } from '../UserCard'
 import type { GitHubUser } from '@/types'
 
 // Mock UserAvatar (Feature #10: Canvas + WASM)
-jest.mock('./UserAvatar', () => ({
+jest.mock('../UserAvatar', () => ({
   UserAvatar: ({ src, alt, size }: { src: string; alt: string; size?: number }) => (
     <div data-testid="user-avatar" data-src={src} data-alt={alt} data-size={size} />
   ),
@@ -47,9 +47,10 @@ describe('UserCard', () => {
       expect(screen.getByText('Seoul, Korea')).toBeInTheDocument()
       expect(screen.getByText('Test Company')).toBeInTheDocument()
       expect(screen.getByText(/100/)).toBeInTheDocument()
-      expect(screen.getByText(/followers/)).toBeInTheDocument()
-      expect(screen.getByText(/42/)).toBeInTheDocument()
-      expect(screen.getByText(/repos/)).toBeInTheDocument()
+      // formatNumber 적용으로 "followers", "repos" 텍스트 제거됨
+      // 아이콘과 숫자만 표시됨
+      expect(screen.getByText('100')).toBeInTheDocument() // followers
+      expect(screen.getByText('42')).toBeInTheDocument() // repos
     })
 
     it('아바타 이미지가 올바른 src와 alt를 가져야 한다', () => {
@@ -145,8 +146,8 @@ describe('UserCard', () => {
 
       render(<UserCard user={userWithZeroFollowers} />)
 
-      expect(screen.getByText(/0/)).toBeInTheDocument()
-      expect(screen.getByText(/followers/)).toBeInTheDocument()
+      // formatNumber 적용: "0 followers" → "0" (아이콘과 함께)
+      expect(screen.getByText('0')).toBeInTheDocument()
     })
 
     it('리포지토리가 0개여도 표시해야 한다', () => {
@@ -155,10 +156,10 @@ describe('UserCard', () => {
         public_repos: 0,
       }
 
-      const { container } = render(<UserCard user={userWithZeroRepos} />)
+      render(<UserCard user={userWithZeroRepos} />)
 
-      expect(screen.getByText('repos')).toBeInTheDocument()
-      expect(container.textContent).toContain('0 repos')
+      // formatNumber 적용: "0 repos" → "0" (아이콘과 함께)
+      expect(screen.getByText('0')).toBeInTheDocument()
     })
 
     it('최소한의 데이터만 있어도 렌더링되어야 한다', () => {
@@ -189,13 +190,13 @@ describe('UserCard', () => {
         score: 1.0,
       }
 
-      const { container } = render(<UserCard user={minimalUser} />)
+      render(<UserCard user={minimalUser} />)
 
       expect(screen.getByText('minimaluser')).toBeInTheDocument()
       expect(screen.getByText('@minimaluser')).toBeInTheDocument()
       expect(screen.getByText('User')).toBeInTheDocument()
-      expect(container.textContent).toContain('0 followers')
-      expect(container.textContent).toContain('0 repos')
+      // formatNumber 적용: "0 followers", "0 repos" → "0" (아이콘과 함께)
+      expect(screen.getAllByText('0')).toHaveLength(2) // followers + repos
 
       // 선택 필드는 표시되지 않음
       expect(
@@ -251,7 +252,8 @@ describe('UserCard', () => {
 
       render(<UserCard user={userWithManyFollowers} />)
 
-      expect(screen.getByText(/1234567/)).toBeInTheDocument()
+      // formatNumber 적용: 1234567 → 1.2M
+      expect(screen.getByText('1.2M')).toBeInTheDocument()
     })
 
     it('매우 많은 리포지토리 수를 처리할 수 있어야 한다', () => {
@@ -262,7 +264,8 @@ describe('UserCard', () => {
 
       render(<UserCard user={userWithManyRepos} />)
 
-      expect(screen.getByText(/9999/)).toBeInTheDocument()
+      // formatNumber 적용: 9999 → 10.0k (9.999k < 10이므로 toFixed(1) 적용)
+      expect(screen.getByText('10.0k')).toBeInTheDocument()
     })
 
     it('빈 문자열 location을 처리할 수 있어야 한다', () => {
@@ -413,9 +416,10 @@ describe('UserCard', () => {
         public_repos: -1,
       }
 
-      const { container } = render(<UserCard user={userWithNegativeRepos} />)
+      render(<UserCard user={userWithNegativeRepos} />)
 
-      expect(container.textContent).toContain('-1 repos')
+      // formatNumber 적용: -1은 그대로 표시
+      expect(screen.getByText('-1')).toBeInTheDocument()
     })
   })
 })

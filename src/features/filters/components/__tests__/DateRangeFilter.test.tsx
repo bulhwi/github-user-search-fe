@@ -1,7 +1,7 @@
 import { render, screen } from '@testing-library/react'
 import { LocalizationProvider } from '@mui/x-date-pickers'
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
-import { DateRangeFilter } from './DateRangeFilter'
+import { DateRangeFilter } from '../DateRangeFilter'
 import type { DateRangeFilter as DateRangeFilterType } from '@/types'
 
 // DatePicker를 LocalizationProvider로 감싸는 헬퍼

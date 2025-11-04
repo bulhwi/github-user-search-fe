@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import { InfiniteScroll } from './InfiniteScroll'
+import { InfiniteScroll } from '../InfiniteScroll'
 
 describe('InfiniteScroll', () => {
   // IntersectionObserver Mock

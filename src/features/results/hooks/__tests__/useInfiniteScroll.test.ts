@@ -1,5 +1,5 @@
 import { renderHook, waitFor } from '@testing-library/react'
-import { useInfiniteScroll } from './useInfiniteScroll'
+import { useInfiniteScroll } from '../useInfiniteScroll'
 
 describe('useInfiniteScroll', () => {
   // IntersectionObserver Mock
