@@ -20,7 +20,7 @@ export default function Home() {
     useSearch()
 
   // Application Layer: 필터 로직
-  const { filters, setType, setSearchIn } = useFilters()
+  const { filters, setType, setSearchIn, setRepos } = useFilters()
 
   return (
     <Container maxWidth="xl" className="py-8">
@@ -42,6 +42,8 @@ export default function Home() {
             onTypeChange={setType}
             searchIn={filters.searchIn}
             onSearchInChange={setSearchIn}
+            repos={filters.repos}
+            onReposChange={setRepos}
           />
         </Grid>
 

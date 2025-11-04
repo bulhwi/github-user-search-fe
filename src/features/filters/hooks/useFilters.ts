@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { setFilters, searchUsers } from '@/store/slices/searchSlice'
-import type { AccountType, SearchInField } from '@/types'
+import type { AccountType, SearchInField, RangeFilter } from '@/types'
 
 /**
  * Filters Feature Hook (Application Layer)
@@ -51,10 +51,10 @@ export function useFilters() {
     [dispatch, query]
   )
 
-  // 리포지토리 수 필터 변경 (Feature #3 - Future)
+  // 리포지토리 수 필터 변경 (Feature #3)
   const setRepos = useCallback(
-    (min?: number, max?: number) => {
-      dispatch(setFilters({ repos: { min, max } }))
+    (repos: RangeFilter) => {
+      dispatch(setFilters({ repos }))
       dispatch(searchUsers({ query, page: 1 }))
     },
     [dispatch, query]
