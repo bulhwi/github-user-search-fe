@@ -43,14 +43,25 @@ export function UserList({
 
   // 에러 상태
   if (error) {
+    // Rate Limit 에러인지 확인
+    const isRateLimitError =
+      error.toLowerCase().includes('rate limit') ||
+      error.toLowerCase().includes('403')
+
     return (
       <Box className={className} sx={{ textAlign: 'center', py: 8 }}>
         <Typography variant="h6" color="error" gutterBottom>
-          Error
+          {isRateLimitError ? 'Rate Limit Exceeded' : 'Error'}
         </Typography>
-        <Typography variant="body1" color="text.secondary">
+        <Typography variant="body1" color="text.secondary" sx={{ mb: 2 }}>
           {error}
         </Typography>
+        {isRateLimitError && (
+          <Typography variant="body2" color="text.secondary">
+            Please try again later or check the rate limit indicator above for
+            reset time.
+          </Typography>
+        )}
       </Box>
     )
   }

@@ -8,6 +8,7 @@ export interface SearchBarProps {
   onSearch: (query: string) => void
   initialValue?: string
   placeholder?: string
+  loading?: boolean
   className?: string
 }
 
@@ -15,6 +16,7 @@ export function SearchBar({
   onSearch,
   initialValue = '',
   placeholder = 'Search GitHub users...',
+  loading = false,
   className,
 }: SearchBarProps) {
   const [query, setQuery] = useState(initialValue)
@@ -47,10 +49,10 @@ export function SearchBar({
         type="submit"
         variant="contained"
         size="large"
-        disabled={!query.trim()}
+        disabled={!query.trim() || loading}
         sx={{ minWidth: 120 }}
       >
-        Search
+        {loading ? 'Searching...' : 'Search'}
       </Button>
     </Box>
   )

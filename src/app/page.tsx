@@ -63,7 +63,11 @@ export default function Home() {
       </Typography>
 
       <Box sx={{ mb: 4, display: 'flex', gap: 2, alignItems: 'flex-start' }}>
-        <SearchBar onSearch={handleSearch} initialValue={query} />
+        <SearchBar
+          onSearch={handleSearch}
+          initialValue={query}
+          loading={loading === 'loading'}
+        />
         <SortControl value={sort} order={order} onChange={handleSortChange} />
       </Box>
 

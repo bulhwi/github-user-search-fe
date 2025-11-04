@@ -72,10 +72,23 @@ export async function GET(request: NextRequest) {
 
     if (!response.ok) {
       const error = await response.json()
+
+      // Rate Limit 에러 처리
+      if (response.status === 403 && rateLimit && rateLimit.remaining === 0) {
+        return NextResponse.json(
+          {
+            error: 'Rate limit exceeded. Please try again later.',
+            rateLimit,
+          },
+          { status: 429 }
+        )
+      }
+
       return NextResponse.json(
         {
           error: error.message || 'GitHub API error',
           status: response.status,
+          rateLimit,
         },
         { status: response.status }
       )
