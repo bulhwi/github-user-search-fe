@@ -1,10 +1,11 @@
 'use client'
 
-import { Container, Typography, Box, Grid } from '@mui/material'
+import { Container, Typography, Box, Grid, IconButton, Tooltip } from '@mui/material'
+import RefreshIcon from '@mui/icons-material/Refresh'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import { useSearch } from '@/features/search/hooks/useSearch'
 import { useFilters } from '@/features/filters/hooks/useFilters'
-import { setSort } from '@/store/slices/searchSlice'
+import { setSort, resetSearch, clearFilters, setQuery } from '@/store/slices/searchSlice'
 import { SearchBar } from '@/features/search/components/SearchBar'
 import { FilterPanel } from '@/features/filters/components/FilterPanel'
 import { UserList } from '@/features/results/components/UserList'
@@ -47,6 +48,14 @@ export default function Home() {
     }
   }
 
+  // 초기화 핸들러
+  const handleReset = () => {
+    dispatch(resetSearch())
+    dispatch(clearFilters())
+    dispatch(setQuery('followers:>1000'))
+    handleSearch('followers:>1000')
+  }
+
   return (
     <Container maxWidth="xl" className="py-8">
       {/* Header: Theme Toggle + Rate Limit Indicator */}
@@ -68,6 +77,11 @@ export default function Home() {
           initialValue={query}
           loading={loading === 'loading'}
         />
+        <Tooltip title="초기화">
+          <IconButton onClick={handleReset} aria-label="reset filters">
+            <RefreshIcon />
+          </IconButton>
+        </Tooltip>
         <SortControl value={sort} order={order} onChange={handleSortChange} />
       </Box>
 
