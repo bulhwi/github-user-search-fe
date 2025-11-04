@@ -6,7 +6,8 @@ import { SearchInFilter } from '@/features/filters/components/SearchInFilter'
 import { ReposFilter } from '@/features/filters/components/ReposFilter'
 import { LocationFilter } from '@/features/filters/components/LocationFilter'
 import { LanguageFilter } from '@/features/filters/components/LanguageFilter'
-import type { AccountType, SearchInField, RangeFilter } from '@/types'
+import { DateRangeFilter } from '@/features/filters/components/DateRangeFilter'
+import type { AccountType, SearchInField, RangeFilter, DateRangeFilter as DateRangeFilterType } from '@/types'
 
 export interface FilterPanelProps {
   type: AccountType | null
@@ -19,6 +20,8 @@ export interface FilterPanelProps {
   onLocationChange: (location: string) => void
   language: string
   onLanguageChange: (language: string) => void
+  created: DateRangeFilterType
+  onCreatedChange: (created: DateRangeFilterType) => void
   className?: string
 }
 
@@ -33,6 +36,8 @@ export function FilterPanel({
   onLocationChange,
   language,
   onLanguageChange,
+  created,
+  onCreatedChange,
   className,
 }: FilterPanelProps) {
   return (
@@ -46,7 +51,8 @@ export function FilterPanel({
         <ReposFilter value={repos} onChange={onReposChange} />
         <LocationFilter value={location} onChange={onLocationChange} />
         <LanguageFilter value={language} onChange={onLanguageChange} />
-        {/* 추가 필터들이 여기에 들어갈 예정 (Feature #6-#8) */}
+        <DateRangeFilter value={created} onChange={onCreatedChange} />
+        {/* 추가 필터들이 여기에 들어갈 예정 (Feature #7-#8) */}
       </Box>
     </Paper>
   )

@@ -2926,3 +2926,169 @@ git commit -m "feat: implement language filter with Autocomplete"
 - freeSolo로 커스텀 언어 입력 가능
 
 ---
+
+### 프롬프트 29: Feature #6 구현 (계정 생성일 필터)
+**사용한 도구**: Claude Code
+**날짜**: 2025-11-04
+
+**프롬프트**:
+```
+6번 진행해보자. 날짜 관련 필터인데 Date range, datepicker 등 mui나 tailwind 에서 제제공하는 컴포넌트를 사용하면 좋을거 같아
+```
+
+**배경**:
+- Issue #6: 계정 생성일 필터 기능 구현
+- GitHub API Qualifiers: `created:>YYYY-MM-DD`, `created:<YYYY-MM-DD`
+- MUI X Date Pickers 사용 권장
+
+**구현 작업**:
+
+1. **패키지 설치**
+   - `@mui/x-date-pickers@8.16.0` 설치
+   - `dayjs@1.11.19` 설치 (date adapter)
+
+2. **DateRangeFilter 컴포넌트 구현**
+   ```typescript
+   // src/features/filters/components/DateRangeFilter.tsx
+   - LocalizationProvider + AdapterDayjs 설정
+   - Created After / Created Before 두 개의 DatePicker
+   - YYYY-MM-DD 포맷 사용
+   - Dayjs로 날짜 변환 및 포맷팅
+   ```
+
+3. **타입 정의 확인**
+   ```typescript
+   // src/types/search.ts (이미 정의됨)
+   interface DateRangeFilter {
+     after?: string  // YYYY-MM-DD
+     before?: string // YYYY-MM-DD
+   }
+   ```
+
+4. **Query Builder 확인**
+   ```typescript
+   // src/features/search/utils/queryBuilder.ts (이미 구현됨)
+   created(after?: string, before?: string): this {
+     if (after) this.qualifiers.push(`created:>${after}`)
+     if (before) this.qualifiers.push(`created:<${before}`)
+     return this
+   }
+   ```
+
+5. **단위 테스트 작성** (TDD)
+   ```typescript
+   // src/features/filters/components/DateRangeFilter.test.tsx
+   - 렌더링 테스트 (5개)
+   - 값 변경 테스트 (4개)
+   - Edge Cases (4개)
+   - 접근성 테스트 (2개)
+   - 총 15개 테스트
+   ```
+
+6. **Redux & Hook 통합**
+   ```typescript
+   // src/features/filters/hooks/useFilters.ts
+   const setCreated = useCallback(
+     (created: DateRangeFilter) => {
+       dispatch(setFilters({ created }))
+       dispatch(searchUsers({ query, page: 1 }))
+     },
+     [dispatch, query]
+   )
+   ```
+
+7. **FilterPanel 통합**
+   ```typescript
+   // src/features/filters/components/FilterPanel.tsx
+   - DateRangeFilter 추가
+   - Props 타입 확장 (created, onCreatedChange)
+   ```
+
+8. **Page 통합**
+   ```typescript
+   // src/app/page.tsx
+   - useFilters에서 setCreated 가져오기
+   - FilterPanel에 created, setCreated 전달
+   ```
+
+9. **E2E 테스트 추가**
+   ```typescript
+   // cypress/e2e/filter-flow.cy.ts
+   - DateRangeFilter 표시 확인
+   - after 날짜만 설정
+   - before 날짜만 설정
+   - after와 before 모두 설정
+   - 날짜 지우기
+   - 다른 필터와 함께 사용
+   - 복잡한 날짜 범위 검색
+   - 여러 필터 조합
+   - 총 8개 시나리오 추가
+   ```
+
+**테스트 결과**:
+```bash
+# 단위 테스트
+✅ 276 tests passed (261 → 276, +15)
+  - DateRangeFilter: 15 tests
+  - 기존 테스트: 261 tests
+
+# TypeScript
+✅ pnpm tsc: 컴파일 성공
+
+# Production Build
+✅ pnpm build: 빌드 성공
+  - First Load JS: 245 kB (+56 kB)
+  - MUI DatePicker 라이브러리 추가로 인한 증가
+```
+
+**E2E 테스트**:
+- 86 → 94 시나리오 (+8 scenarios)
+- DateRangeFilter 기능 검증
+- 다른 필터와의 통합 검증
+
+**기술적 결정**:
+
+1. **MUI X Date Pickers 선택 이유**
+   - MUI 생태계와의 일관성
+   - 접근성 (a11y) 기본 지원
+   - LocalizationProvider로 국제화 지원
+   - dayjs 경량 라이브러리
+
+2. **Date Format: YYYY-MM-DD**
+   - GitHub API 요구사항
+   - ISO 8601 표준 포맷
+   - 명확한 날짜 표현
+
+3. **두 개의 독립적인 DatePicker**
+   - After/Before 분리로 유연성 제공
+   - 한쪽만 설정 가능 (선택적)
+   - 사용자 친화적 UI
+
+4. **테스트 접근법**
+   - MUI DatePicker의 복잡한 구조로 인해 직접적인 사용자 상호작용 테스트 대신 컴포넌트 렌더링 및 값 변경 테스트 수행
+   - rerender 패턴 사용하여 값 변경 시뮬레이션
+   - E2E 테스트로 실제 사용자 시나리오 검증
+
+**Issue 완료**:
+- ✅ Issue #6 Closed
+
+**개선 사항**:
+- 날짜 범위 검색으로 정밀한 필터링 가능
+- MUI DatePicker로 사용자 경험 향상
+- 캘린더 UI로 직관적인 날짜 선택
+
+**파일 변경 사항**:
+```
+추가:
+- src/features/filters/components/DateRangeFilter.tsx
+- src/features/filters/components/DateRangeFilter.test.tsx
+
+수정:
+- src/features/filters/hooks/useFilters.ts (setCreated 추가)
+- src/features/filters/components/FilterPanel.tsx (DateRangeFilter 통합)
+- src/app/page.tsx (setCreated 연결)
+- cypress/e2e/filter-flow.cy.ts (+8 scenarios)
+- package.json (@mui/x-date-pickers, dayjs 추가)
+```
+
+---

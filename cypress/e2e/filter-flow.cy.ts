@@ -496,4 +496,116 @@ describe('필터 플로우 테스트', () => {
         .and('include', 'language:Python')
     })
   })
+
+  describe('DateRangeFilter (계정 생성일) 변경', () => {
+    it('DateRangeFilter가 표시되어야 한다', () => {
+      cy.contains('Created After').should('be.visible')
+      cy.contains('Created Before').should('be.visible')
+    })
+
+    it('after 날짜만 설정할 수 있어야 한다', () => {
+      cy.get('#created-after-filter').type('2020-01-01')
+      cy.wait('@searchAPI')
+
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('include', 'created:>2020-01-01')
+    })
+
+    it('before 날짜만 설정할 수 있어야 한다', () => {
+      cy.get('#created-before-filter').type('2023-12-31')
+      cy.wait('@searchAPI')
+
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('include', 'created:<2023-12-31')
+    })
+
+    it('after와 before를 모두 설정할 수 있어야 한다', () => {
+      cy.get('#created-after-filter').type('2020-01-01')
+      cy.wait('@searchAPI')
+
+      cy.get('#created-before-filter').type('2023-12-31')
+      cy.wait('@searchAPI')
+
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('include', 'created:>2020-01-01')
+        .and('include', 'created:<2023-12-31')
+    })
+
+    it('날짜를 지울 수 있어야 한다', () => {
+      // 날짜 입력
+      cy.get('#created-after-filter').type('2020-01-01')
+      cy.wait('@searchAPI')
+
+      // 날짜 삭제
+      cy.get('#created-after-filter').clear()
+      cy.wait('@searchAPI')
+
+      // created 파라미터가 없어야 함
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('not.include', 'created:>')
+    })
+
+    it('다른 필터와 함께 사용할 수 있어야 한다', () => {
+      // Type 필터 변경
+      cy.get('[data-testid="type-filter"]').click()
+      cy.contains('li', 'User').click()
+      cy.wait('@searchAPI')
+
+      // DateRange 필터 추가
+      cy.get('#created-after-filter').type('2020-01-01')
+      cy.wait('@searchAPI')
+
+      // 두 필터 모두 적용 확인
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('include', 'type:user')
+        .and('include', 'created:>2020-01-01')
+    })
+
+    it('복잡한 날짜 범위로 검색할 수 있어야 한다', () => {
+      cy.get('#created-after-filter').type('2020-01-01')
+      cy.wait('@searchAPI')
+
+      cy.get('#created-before-filter').type('2021-12-31')
+      cy.wait('@searchAPI')
+
+      // 날짜 범위 확인
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('include', 'created:>2020-01-01')
+        .and('include', 'created:<2021-12-31')
+    })
+
+    it('여러 필터와 함께 조합할 수 있어야 한다', () => {
+      // Type 필터
+      cy.get('[data-testid="type-filter"]').click()
+      cy.contains('li', 'User').click()
+      cy.wait('@searchAPI')
+
+      // Language 필터
+      cy.get('input[placeholder*="JavaScript"]').type('Python')
+      cy.wait('@searchAPI')
+
+      // Location 필터
+      cy.get('input[placeholder*="Seoul"]').type('Korea')
+      cy.wait(600) // Debounce
+      cy.wait('@searchAPI')
+
+      // DateRange 필터
+      cy.get('#created-after-filter').type('2020-01-01')
+      cy.wait('@searchAPI')
+
+      // 모든 필터 확인
+      cy.wait('@searchAPI')
+        .its('request.url')
+        .should('include', 'type:user')
+        .and('include', 'language:Python')
+        .and('include', 'location:Korea')
+        .and('include', 'created:>2020-01-01')
+    })
+  })
 })

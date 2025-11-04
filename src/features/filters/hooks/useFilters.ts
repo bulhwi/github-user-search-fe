@@ -1,7 +1,7 @@
 import { useCallback, useRef, useEffect } from 'react'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { setFilters, searchUsers } from '@/store/slices/searchSlice'
-import type { AccountType, SearchInField, RangeFilter } from '@/types'
+import type { AccountType, SearchInField, RangeFilter, DateRangeFilter } from '@/types'
 
 /**
  * Filters Feature Hook (Application Layer)
@@ -77,6 +77,15 @@ export function useFilters() {
     [dispatch, query]
   )
 
+  // 계정 생성일 필터 변경 (Feature #6)
+  const setCreated = useCallback(
+    (created: DateRangeFilter) => {
+      dispatch(setFilters({ created }))
+      dispatch(searchUsers({ query, page: 1 }))
+    },
+    [dispatch, query]
+  )
+
   // 팔로워 수 필터 변경 (Feature #7 - Future)
   const setFollowers = useCallback(
     (min?: number, max?: number) => {
@@ -93,6 +102,7 @@ export function useFilters() {
     setLocation,
     setLanguage,
     setRepos,
+    setCreated,
     setFollowers,
   }
 }
