@@ -1,6 +1,7 @@
 'use client'
 
-import { Grid, Typography, Box, CircularProgress, Button, Alert } from '@mui/material'
+import { Typography, Box, CircularProgress, Button, Alert } from '@mui/material'
+import Grid2 from '@mui/material/Grid2'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import { UserCard } from '@/features/results/components/UserCard'
 import { InfiniteScroll } from '@/features/results/components/InfiniteScroll'
@@ -119,13 +120,13 @@ export function UserList({
         loadingMessage="Loading more users..."
         endMessage="All users loaded"
       >
-        <Grid container spacing={3}>
+        <Grid2 container spacing={3}>
           {users.map((user) => (
-            <Grid item key={user.id} xs={12} sm={6} md={4} lg={3}>
+            <Grid2 key={user.id} size={{ xs: 12, sm: 6, md: 4, lg: 3 }}>
               <UserCard user={user} />
-            </Grid>
+            </Grid2>
           ))}
-        </Grid>
+        </Grid2>
       </InfiniteScroll>
     </Box>
   )

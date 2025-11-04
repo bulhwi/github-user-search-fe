@@ -1,6 +1,7 @@
 'use client'
 
-import { Container, Typography, Box, Grid, IconButton, Tooltip } from '@mui/material'
+import { Container, Typography, Box, IconButton, Tooltip } from '@mui/material'
+import Grid2 from '@mui/material/Grid2'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import { useSearch } from '@/features/search/hooks/useSearch'
@@ -85,8 +86,8 @@ export default function Home() {
         <SortControl value={sort} order={order} onChange={handleSortChange} />
       </Box>
 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={3}>
+      <Grid2 container spacing={3}>
+        <Grid2 size={{ xs: 12, md: 3 }}>
           <FilterPanel
             type={filters.type}
             onTypeChange={setType}
@@ -105,9 +106,9 @@ export default function Home() {
             sponsorable={filters.sponsorable}
             onSponsorableChange={setSponsorable}
           />
-        </Grid>
+        </Grid2>
 
-        <Grid item xs={12} md={9}>
+        <Grid2 size={{ xs: 12, md: 9 }}>
           <UserList
             users={results}
             loading={loading}
@@ -118,8 +119,8 @@ export default function Home() {
             incompleteResults={incompleteResults}
             onRetry={retry}
           />
-        </Grid>
-      </Grid>
+        </Grid2>
+      </Grid2>
     </Container>
   )
 }
