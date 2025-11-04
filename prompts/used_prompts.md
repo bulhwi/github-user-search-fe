@@ -4657,3 +4657,281 @@ git push
 - cypress/e2e/filter-flow.cy.ts (7개 테스트에 {force: true} 추가)
 - prompts/used_prompts.md (Prompt #17 올바른 포맷으로 작성)
 
+
+---
+
+## Prompt #18
+
+**날짜**: 2025-01-05
+**작업**: Issue #21 조사, Followers/Repos 표시 수정, 반응형 레이아웃 개선, 이슈 정리
+
+### 사용자 요청
+1. "유저별 팔로워수와 repo 수가 정상적으로 노출이 안되는거 같아 확인해봐"
+2. SearchBar + SortControl 레이아웃이 모바일/PC 반응형 대응이 안됨
+3. 현재까지 남아있는 이슈 확인 및 처리
+
+### Claude의 대응
+
+#### 1단계: Issue #21 조사 (SearchBar + Location 필터 버그)
+**문제 인식**
+- GitHub Issue #21: SearchBar에 "bulhwi" 입력 + Location "Seoul" 조합 시 검색 결과 없음
+
+**조사 과정**
+```typescript
+// 1. queryBuilder.ts 분석
+- location() 메서드가 공백 처리 및 따옴표 추가 정상 작동
+- build() 메서드가 query와 qualifiers를 올바르게 조합
+
+// 2. searchSlice.ts 분석 (line 60-61)
+const baseQuery = params.query ?? state.search.query
+const queryString = buildSearchQuery(baseQuery, state.search.filters)
+// ✅ 정상: SearchBar 입력과 필터를 올바르게 결합
+
+// 3. 실제 API 테스트
+curl "https://api.github.com/search/users?q=bulhwi+in:login+location:Seoul"
+// 결과: total_count = 0 (GitHub에 해당 사용자 없음)
+
+curl "https://api.github.com/users/bulhwi"
+// location: "대한민국" (NOT "Seoul")
+
+curl "https://api.github.com/search/users?q=bulhwi+in:login+location:대한민국"
+// 결과: total_count = 1 ✓
+```
+
+**결론**: 버그 아님 (Not Planned으로 종료)
+- 코드 로직 정상 작동
+- GitHub API가 정확히 일치하는 location만 검색
+- "대한민국" ≠ "Seoul"이므로 결과 없음이 정상
+
+**조치**
+- Issue #21에 상세한 조사 결과 코멘트
+- "not planned"로 종료 처리
+
+#### 2단계: Followers/Public_repos 표시 문제 수정
+
+**문제 발견**
+```bash
+# Dev 서버 로그
+[GitHub API] Sample results (first 3):
+  - JakeWharton: undefined repos
+  - chrisbanes: undefined repos
+  - skydoves: undefined repos
+```
+
+**원인 분석**
+```bash
+curl "https://api.github.com/search/users?q=torvalds&per_page=1" | jq '.items[0] | {followers, public_repos}'
+# {
+#   "followers": null,
+#   "public_repos": null
+# }
+```
+→ GitHub Search API는 `followers`와 `public_repos`를 반환하지 않음
+
+**해결책**
+```typescript
+// src/app/api/search/route.ts
+// 7. Enrich user data with detailed information
+if (data.items && data.items.length > 0) {
+  const enrichedItems = await Promise.all(
+    data.items.map(async (user: any) => {
+      try {
+        // Fetch detailed user info
+        const userResponse = await fetch(`https://api.github.com/users/${user.login}`, {
+          headers: {
+            Authorization: `token ${githubToken}`,
+            Accept: 'application/vnd.github.v3+json',
+          },
+        })
+
+        if (userResponse.ok) {
+          const userDetails = await userResponse.json()
+          return {
+            ...user,
+            followers: userDetails.followers,
+            public_repos: userDetails.public_repos,
+            name: userDetails.name,
+            bio: userDetails.bio,
+            location: userDetails.location,
+            company: userDetails.company,
+          }
+        }
+      } catch (error) {
+        console.error(`Failed to fetch details for ${user.login}:`, error)
+      }
+      return user
+    })
+  )
+  data.items = enrichedItems
+}
+```
+
+**검증**
+```bash
+# Dev 서버 로그 (수정 후)
+[GitHub API] Sample results (first 3):
+  - torvalds: 9 repos, 254426 followers ✓
+  - karpathy: 56 repos, 119158 followers ✓
+  - openai: 227 repos, 107534 followers ✓
+```
+
+**커밋**: `a49c4a7` - "fix: enrich user data with followers and public_repos from GitHub API"
+
+#### 3단계: 반응형 레이아웃 개선
+
+**문제 인식**
+- SearchBar가 `width: '100%'`로 설정되어 모바일에서 IconButton과 SortControl이 밀려남
+- SortControl이 `minWidth: 200`으로 고정되어 모바일에서 넘침
+- 전체 Box가 `display: 'flex'`로 가로 배치되어 줄바꿈 안됨
+
+**해결책**
+
+1. **page.tsx**: 레이아웃 재구성
+```tsx
+// 이전
+<Box sx={{ mb: 4, display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+  <SearchBar />
+  <IconButton />
+  <SortControl />
+</Box>
+
+// 이후
+<Box sx={{ mb: 4 }}>
+  {/* Search Bar Row */}
+  <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+    <Box sx={{ flex: 1 }}>
+      <SearchBar />
+    </Box>
+    <IconButton sx={{ flexShrink: 0 }} />
+  </Box>
+  
+  {/* Sort Control Row */}
+  <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+    <SortControl />
+  </Box>
+</Box>
+```
+
+2. **SearchBar.tsx**: 반응형 개선
+```tsx
+<Box sx={{ display: 'flex', gap: { xs: 1, sm: 2 }, width: '100%' }}>
+  <TextField fullWidth />
+  <Button sx={{ 
+    minWidth: { xs: 80, sm: 120 },
+    flexShrink: 0 
+  }} />
+</Box>
+```
+
+3. **SortControl.tsx**: 반응형 개선
+```tsx
+<Box sx={{ 
+  display: 'flex', 
+  gap: { xs: 1, sm: 2 }, 
+  flexWrap: 'wrap' 
+}}>
+  <FormControl sx={{ 
+    minWidth: { xs: 150, sm: 200 }, 
+    flexShrink: 0 
+  }} />
+  
+  <Typography sx={{ 
+    display: { xs: 'none', sm: 'block' } 
+  }}>
+    {order === 'desc' ? '내림차순' : '오름차순'}
+  </Typography>
+</Box>
+```
+
+**효과**
+- 모바일: SearchBar + 초기화 버튼 한 줄, SortControl 다음 줄
+- 데스크톱: 적절한 간격 유지
+- 모든 브레이크포인트에서 깔끔한 레이아웃
+
+**커밋**: `df4d3f6` - "style: improve responsive layout for search controls"
+
+#### 4단계: Issue #17 확인 및 종료
+
+**확인 사항**
+```typescript
+// UserList.tsx - 재시도 버튼 (line 72-81)
+{isRateLimitError ? (
+  <Typography>Please try again later...</Typography>
+) : (
+  onRetry && (
+    <Button onClick={onRetry}>
+      Try Again
+    </Button>
+  )
+)}
+
+// UserList.tsx - Incomplete Results 경고 (line 105-110)
+{incompleteResults && (
+  <Alert severity="warning">
+    Incomplete results: The search results may be partial...
+  </Alert>
+)}
+
+// page.tsx - retry 전달 (line 29, 129)
+const { retry } = useSearch()
+<UserList onRetry={retry} incompleteResults={incompleteResults} />
+```
+
+**결론**: Issue #17의 모든 요구사항이 이미 구현됨
+- ✅ "Try Again" 재시도 버튼
+- ✅ retry 콜백 기능
+- ✅ Incomplete Results 경고
+
+**조치**
+- 상세한 구현 확인 코멘트 작성
+- Issue #17 종료 처리
+
+### 완료된 작업
+
+1. **Issue #21**: SearchBar + Location 필터 조합 버그
+   - 상태: ❌ Not Planned
+   - 결과: 코드 정상, GitHub API 데이터 문제
+
+2. **Followers/Repos 표시 수정**
+   - 커밋: `a49c4a7`
+   - 개별 User API 호출하여 데이터 enrichment
+   - 30명 병렬 처리 (~1-2초 추가 소요)
+
+3. **반응형 레이아웃 개선**
+   - 커밋: `df4d3f6`
+   - 모바일/데스크톱 대응
+   - SearchBar 확장, SortControl 분리
+
+4. **Issue #17**: 에러 재시도 버튼
+   - 상태: ✅ Closed
+   - 결과: 이미 구현 완료 확인
+
+### 수정된 파일
+- `src/app/api/search/route.ts` (user enrichment 추가)
+- `src/app/page.tsx` (레이아웃 재구성)
+- `src/features/search/components/SearchBar.tsx` (반응형)
+- `src/features/filters/components/SortControl.tsx` (반응형)
+
+### 학습 포인트
+
+1. **GitHub API 제한사항**
+   - Search API는 제한된 필드만 반환 (followers, public_repos 제외)
+   - 상세 정보는 개별 User API 호출 필요
+   - Rate Limit 고려 필요 (5000 req/hour with token)
+
+2. **반응형 디자인 패턴**
+   - MUI의 breakpoint 시스템 활용: `{ xs: value1, sm: value2 }`
+   - `flex: 1`로 확장, `flexShrink: 0`로 고정
+   - `flexWrap: 'wrap'`로 줄바꿈 허용
+   - 모바일에서 불필요한 텍스트는 `display: { xs: 'none', sm: 'block' }`
+
+3. **이슈 디버깅 프로세스**
+   - 코드 로직 분석 → 실제 API 테스트 → 원인 규명
+   - 버그가 아닌 경우 근거 제시 후 종료
+   - 이미 구현된 기능은 확인 후 즉시 종료
+
+### 최종 상태
+- **Open Issues**: 0개
+- **Closed Issues**: 전체 처리 완료
+- **Build**: ✅ Passing
+- **Tests**: ✅ All Passing
