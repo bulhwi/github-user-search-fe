@@ -61,6 +61,7 @@ export function Select<T extends string = string>({
         value={value}
         label={label}
         onChange={handleChange}
+        data-testid={id}
       >
         {options.map((option) => (
           <MenuItem

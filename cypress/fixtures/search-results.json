@@ -1,0 +1,72 @@
+{
+  "total_count": 3,
+  "incomplete_results": false,
+  "items": [
+    {
+      "id": 1,
+      "login": "testuser1",
+      "avatar_url": "https://avatars.githubusercontent.com/u/1?v=4",
+      "html_url": "https://github.com/testuser1",
+      "type": "User",
+      "name": "Test User One",
+      "company": "Test Company",
+      "blog": "https://testuser1.dev",
+      "location": "Seoul, Korea",
+      "email": null,
+      "hireable": true,
+      "bio": "Test bio for user one",
+      "public_repos": 10,
+      "public_gists": 5,
+      "followers": 100,
+      "following": 50,
+      "created_at": "2020-01-01T00:00:00Z",
+      "updated_at": "2023-12-01T00:00:00Z"
+    },
+    {
+      "id": 2,
+      "login": "testuser2",
+      "avatar_url": "https://avatars.githubusercontent.com/u/2?v=4",
+      "html_url": "https://github.com/testuser2",
+      "type": "User",
+      "name": "Test User Two",
+      "company": null,
+      "blog": "",
+      "location": "Tokyo, Japan",
+      "email": null,
+      "hireable": false,
+      "bio": "Test bio for user two",
+      "public_repos": 25,
+      "public_gists": 10,
+      "followers": 500,
+      "following": 100,
+      "created_at": "2019-06-15T00:00:00Z",
+      "updated_at": "2023-11-15T00:00:00Z"
+    },
+    {
+      "id": 3,
+      "login": "testorg",
+      "avatar_url": "https://avatars.githubusercontent.com/u/3?v=4",
+      "html_url": "https://github.com/testorg",
+      "type": "Organization",
+      "name": "Test Organization",
+      "company": null,
+      "blog": "https://testorg.com",
+      "location": "San Francisco, CA",
+      "email": null,
+      "hireable": null,
+      "bio": "Test organization bio",
+      "public_repos": 100,
+      "public_gists": 0,
+      "followers": 1000,
+      "following": 0,
+      "created_at": "2018-03-20T00:00:00Z",
+      "updated_at": "2023-12-31T00:00:00Z"
+    }
+  ],
+  "rateLimit": {
+    "limit": 60,
+    "remaining": 59,
+    "reset": 1699999999,
+    "used": 1
+  }
+}

@@ -71,12 +71,9 @@ export function UserList({
 
   // 결과 표시 + 무한 스크롤
   return (
-    <Box className={className}>
+    <Box className={className} data-testid="user-list">
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        Found {totalCount !== undefined ? totalCount : users.length} users
-        {totalCount !== undefined &&
-          users.length < totalCount &&
-          ` (showing ${users.length})`}
+        {totalCount !== undefined ? totalCount : users.length} results
       </Typography>
 
       <InfiniteScroll

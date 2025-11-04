@@ -22,7 +22,7 @@ export function UserCard({ user, className }: UserCardProps) {
   const accountTypeColor = user.type === 'User' ? 'primary' : 'secondary'
 
   return (
-    <Card className={className} sx={{ height: '100%' }}>
+    <Card className={className} sx={{ height: '100%' }} data-testid="user-card">
       <CardContent>
         <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
           <Avatar
