@@ -50,9 +50,17 @@ export function SortControl({
   }
 
   return (
-    <Box className={className} sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+    <Box
+      className={className}
+      sx={{
+        display: 'flex',
+        gap: { xs: 1, sm: 2 },
+        alignItems: 'center',
+        flexWrap: 'wrap',
+      }}
+    >
       {/* Sort Select */}
-      <FormControl sx={{ minWidth: 200 }}>
+      <FormControl sx={{ minWidth: { xs: 150, sm: 200 }, flexShrink: 0 }} size="medium">
         <InputLabel id="sort-by-label">정렬 기준</InputLabel>
         <Select
           labelId="sort-by-label"
@@ -70,7 +78,7 @@ export function SortControl({
       </FormControl>
 
       {/* Order Toggle Button */}
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
         <Tooltip
           title={
             isBestMatch
@@ -97,7 +105,11 @@ export function SortControl({
             </IconButton>
           </span>
         </Tooltip>
-        <Typography variant="caption" color="text.secondary">
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{ display: { xs: 'none', sm: 'block' } }}
+        >
           {currentOrder === 'desc' ? '내림차순' : '오름차순'}
         </Typography>
       </Box>

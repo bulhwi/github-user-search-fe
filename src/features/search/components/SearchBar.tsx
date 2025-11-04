@@ -33,7 +33,7 @@ export function SearchBar({
       component="form"
       onSubmit={handleSubmit}
       className={className}
-      sx={{ display: 'flex', gap: 2, width: '100%' }}
+      sx={{ display: 'flex', gap: { xs: 1, sm: 2 }, width: '100%' }}
     >
       <TextField
         fullWidth
@@ -41,6 +41,7 @@ export function SearchBar({
         onChange={(e) => setQuery(e.target.value)}
         placeholder={placeholder}
         variant="outlined"
+        size="medium"
         InputProps={{
           startAdornment: <SearchIcon sx={{ mr: 1, color: 'text.secondary' }} />,
         }}
@@ -50,7 +51,10 @@ export function SearchBar({
         variant="contained"
         size="large"
         disabled={!query.trim() || loading}
-        sx={{ minWidth: 120 }}
+        sx={{
+          minWidth: { xs: 80, sm: 120 },
+          flexShrink: 0,
+        }}
       >
         {loading ? 'Searching...' : 'Search'}
       </Button>

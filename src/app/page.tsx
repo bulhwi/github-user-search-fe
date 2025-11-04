@@ -72,18 +72,27 @@ export default function Home() {
         Search GitHub users with advanced filters
       </Typography>
 
-      <Box sx={{ mb: 4, display: 'flex', gap: 2, alignItems: 'flex-start' }}>
-        <SearchBar
-          onSearch={handleSearch}
-          initialValue={query}
-          loading={loading === 'loading'}
-        />
-        <Tooltip title="초기화">
-          <IconButton onClick={handleReset} aria-label="reset filters">
-            <RefreshIcon />
-          </IconButton>
-        </Tooltip>
-        <SortControl value={sort} order={order} onChange={handleSortChange} />
+      <Box sx={{ mb: 4 }}>
+        {/* Search Bar Row */}
+        <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+          <Box sx={{ flex: 1 }}>
+            <SearchBar
+              onSearch={handleSearch}
+              initialValue={query}
+              loading={loading === 'loading'}
+            />
+          </Box>
+          <Tooltip title="초기화">
+            <IconButton onClick={handleReset} aria-label="reset filters" sx={{ flexShrink: 0 }}>
+              <RefreshIcon />
+            </IconButton>
+          </Tooltip>
+        </Box>
+
+        {/* Sort Control Row */}
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <SortControl value={sort} order={order} onChange={handleSortChange} />
+        </Box>
       </Box>
 
       <Grid2 container spacing={3}>
