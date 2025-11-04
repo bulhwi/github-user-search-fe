@@ -17,9 +17,9 @@ export interface SearchInFilterProps {
 }
 
 const searchInOptions: Array<{ value: SearchInField; label: string }> = [
-  { value: 'login', label: 'Login' },
-  { value: 'name', label: 'Name' },
-  { value: 'email', label: 'Email' },
+  { value: 'login', label: '사용자명' },
+  { value: 'name', label: '이름' },
+  { value: 'email', label: '이메일' },
 ]
 
 /**
@@ -50,7 +50,7 @@ export function SearchInFilter({
 
   return (
     <FormControl component="fieldset" className={className}>
-      <FormLabel component="legend">Search In</FormLabel>
+      <FormLabel component="legend">검색 대상</FormLabel>
       <FormGroup>
         {searchInOptions.map((option) => (
           <FormControlLabel
@@ -67,7 +67,7 @@ export function SearchInFilter({
         ))}
       </FormGroup>
       <FormHelperText>
-        Search in login, name, or email (at least one required)
+        사용자명, 이름, 이메일에서 검색 (최소 1개 필수)
       </FormHelperText>
     </FormControl>
   )

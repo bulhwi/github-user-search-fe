@@ -8,25 +8,25 @@ describe('TypeFilter', () => {
       const onChange = jest.fn()
       render(<TypeFilter value={null} onChange={onChange} />)
 
-      const select = screen.getByLabelText('Account Type')
+      const select = screen.getByLabelText('계정 타입')
       expect(select).toBeInTheDocument()
-      expect(select).toHaveTextContent('All')
+      expect(select).toHaveTextContent('전체')
     })
 
     it('value가 "user"일 때 "Users"가 선택되어야 한다', () => {
       const onChange = jest.fn()
       render(<TypeFilter value="user" onChange={onChange} />)
 
-      const select = screen.getByLabelText('Account Type')
-      expect(select).toHaveTextContent('Users')
+      const select = screen.getByLabelText('계정 타입')
+      expect(select).toHaveTextContent('사용자')
     })
 
     it('value가 "org"일 때 "Organizations"가 선택되어야 한다', () => {
       const onChange = jest.fn()
       render(<TypeFilter value="org" onChange={onChange} />)
 
-      const select = screen.getByLabelText('Account Type')
-      expect(select).toHaveTextContent('Organizations')
+      const select = screen.getByLabelText('계정 타입')
+      expect(select).toHaveTextContent('조직')
     })
 
     it('도움말 텍스트를 표시해야 한다', () => {
@@ -34,7 +34,7 @@ describe('TypeFilter', () => {
       render(<TypeFilter value={null} onChange={onChange} />)
 
       expect(
-        screen.getByText('Filter by user or organization')
+        screen.getByText('사용자 또는 조직으로 필터링')
       ).toBeInTheDocument()
     })
 
@@ -56,10 +56,10 @@ describe('TypeFilter', () => {
 
       render(<TypeFilter value={null} onChange={onChange} />)
 
-      const select = screen.getByLabelText('Account Type')
+      const select = screen.getByLabelText('계정 타입')
       await user.click(select)
 
-      const userOption = screen.getByRole('option', { name: 'Users' })
+      const userOption = screen.getByRole('option', { name: '사용자' })
       await user.click(userOption)
 
       expect(onChange).toHaveBeenCalledWith('user')
@@ -71,10 +71,10 @@ describe('TypeFilter', () => {
 
       render(<TypeFilter value={null} onChange={onChange} />)
 
-      const select = screen.getByLabelText('Account Type')
+      const select = screen.getByLabelText('계정 타입')
       await user.click(select)
 
-      const orgOption = screen.getByRole('option', { name: 'Organizations' })
+      const orgOption = screen.getByRole('option', { name: '조직' })
       await user.click(orgOption)
 
       expect(onChange).toHaveBeenCalledWith('org')
@@ -86,10 +86,10 @@ describe('TypeFilter', () => {
 
       render(<TypeFilter value="user" onChange={onChange} />)
 
-      const select = screen.getByLabelText('Account Type')
+      const select = screen.getByLabelText('계정 타입')
       await user.click(select)
 
-      const allOption = screen.getByRole('option', { name: 'All' })
+      const allOption = screen.getByRole('option', { name: '전체' })
       await user.click(allOption)
 
       expect(onChange).toHaveBeenCalledWith(null)
@@ -101,10 +101,10 @@ describe('TypeFilter', () => {
 
       render(<TypeFilter value="user" onChange={onChange} />)
 
-      const select = screen.getByLabelText('Account Type')
+      const select = screen.getByLabelText('계정 타입')
       await user.click(select)
 
-      const orgOption = screen.getByRole('option', { name: 'Organizations' })
+      const orgOption = screen.getByRole('option', { name: '조직' })
       await user.click(orgOption)
 
       expect(onChange).toHaveBeenCalledWith('org')
@@ -116,7 +116,7 @@ describe('TypeFilter', () => {
       // @ts-expect-error Testing without onChange
       render(<TypeFilter value={null} />)
 
-      const select = screen.getByLabelText('Account Type')
+      const select = screen.getByLabelText('계정 타입')
       expect(select).toBeInTheDocument()
     })
 
@@ -127,23 +127,23 @@ describe('TypeFilter', () => {
       const { rerender } = render(<TypeFilter value={null} onChange={onChange} />)
 
       // 첫 번째 변경: All → Users
-      const select = screen.getByLabelText('Account Type')
+      const select = screen.getByLabelText('계정 타입')
       await user.click(select)
-      await user.click(screen.getByRole('option', { name: 'Users' }))
+      await user.click(screen.getByRole('option', { name: '사용자' }))
 
       expect(onChange).toHaveBeenCalledWith('user')
 
       // 두 번째 변경: Users → Organizations
       rerender(<TypeFilter value="user" onChange={onChange} />)
       await user.click(select)
-      await user.click(screen.getByRole('option', { name: 'Organizations' }))
+      await user.click(screen.getByRole('option', { name: '조직' }))
 
       expect(onChange).toHaveBeenCalledWith('org')
 
       // 세 번째 변경: Organizations → All
       rerender(<TypeFilter value="org" onChange={onChange} />)
       await user.click(select)
-      await user.click(screen.getByRole('option', { name: 'All' }))
+      await user.click(screen.getByRole('option', { name: '전체' }))
 
       expect(onChange).toHaveBeenCalledWith(null)
       expect(onChange).toHaveBeenCalledTimes(3)
@@ -155,8 +155,8 @@ describe('TypeFilter', () => {
       const onChange = jest.fn()
       render(<TypeFilter value={null} onChange={onChange} />)
 
-      const select = screen.getByLabelText('Account Type')
-      expect(select).toHaveAccessibleName('Account Type')
+      const select = screen.getByLabelText('계정 타입')
+      expect(select).toHaveAccessibleName('계정 타입')
     })
 
     it('모든 옵션이 접근 가능해야 한다', async () => {
@@ -165,13 +165,13 @@ describe('TypeFilter', () => {
 
       render(<TypeFilter value={null} onChange={onChange} />)
 
-      const select = screen.getByLabelText('Account Type')
+      const select = screen.getByLabelText('계정 타입')
       await user.click(select)
 
-      expect(screen.getByRole('option', { name: 'All' })).toBeInTheDocument()
-      expect(screen.getByRole('option', { name: 'Users' })).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: '전체' })).toBeInTheDocument()
+      expect(screen.getByRole('option', { name: '사용자' })).toBeInTheDocument()
       expect(
-        screen.getByRole('option', { name: 'Organizations' })
+        screen.getByRole('option', { name: '조직' })
       ).toBeInTheDocument()
     })
   })

@@ -42,10 +42,10 @@ export function DateRangeFilter({
     <LocalizationProvider dateAdapter={AdapterDayjs}>
       <Box className={className} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
         <Typography variant="body2" color="text.secondary">
-          Filter by creation date
+          계정 생성일로 필터링
         </Typography>
         <DatePicker
-          label="Created After"
+          label="생성일 이후"
           value={afterValue}
           onChange={handleAfterChange}
           format="YYYY-MM-DD"
@@ -54,13 +54,13 @@ export function DateRangeFilter({
               id: 'created-after-filter',
               fullWidth: true,
               inputProps: {
-                'aria-label': 'Created After',
+                'aria-label': '생성일 이후',
               },
             },
           }}
         />
         <DatePicker
-          label="Created Before"
+          label="생성일 이전"
           value={beforeValue}
           onChange={handleBeforeChange}
           format="YYYY-MM-DD"
@@ -69,7 +69,7 @@ export function DateRangeFilter({
               id: 'created-before-filter',
               fullWidth: true,
               inputProps: {
-                'aria-label': 'Created Before',
+                'aria-label': '생성일 이전',
               },
             },
           }}

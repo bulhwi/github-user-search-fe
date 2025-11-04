@@ -33,18 +33,18 @@ export function FollowersFilter({ value, onChange, className }: FollowersFilterP
 
   return (
     <FormControl fullWidth className={className}>
-      <FormLabel id="followers-filter-label">Followers Count</FormLabel>
+      <FormLabel id="followers-filter-label">팔로워</FormLabel>
       <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
         <TextField
           id="followers-min"
-          label="Min Followers"
+          label="최소 팔로워"
           type="number"
           value={min ?? ''}
           onChange={handleMinChange}
           inputProps={{
             min: 0,
             step: 1,
-            'aria-label': 'Min Followers',
+            'aria-label': '최소 팔로워',
           }}
           error={isInvalid}
           fullWidth
@@ -52,14 +52,14 @@ export function FollowersFilter({ value, onChange, className }: FollowersFilterP
         />
         <TextField
           id="followers-max"
-          label="Max Followers"
+          label="최대 팔로워"
           type="number"
           value={max ?? ''}
           onChange={handleMaxChange}
           inputProps={{
             min: 0,
             step: 1,
-            'aria-label': 'Max Followers',
+            'aria-label': '최대 팔로워',
           }}
           error={isInvalid}
           fullWidth
@@ -67,9 +67,9 @@ export function FollowersFilter({ value, onChange, className }: FollowersFilterP
         />
       </Box>
       {isInvalid ? (
-        <FormHelperText error>Min must be less than or equal to Max</FormHelperText>
+        <FormHelperText error>최소값은 최대값보다 작거나 같아야 합니다</FormHelperText>
       ) : (
-        <FormHelperText>Filter by follower count</FormHelperText>
+        <FormHelperText>팔로워 수로 필터링</FormHelperText>
       )}
     </FormControl>
   )

@@ -6,21 +6,21 @@ describe('LanguageFilter', () => {
   describe('렌더링 - 성공 케이스', () => {
     it('기본값으로 빈 입력 필드가 표시되어야 한다', () => {
       render(<LanguageFilter value="" onChange={() => {}} />)
-      const input = screen.getByLabelText(/language/i)
+      const input = screen.getByLabelText(/언어/i)
       expect(input).toBeInTheDocument()
       expect(input).toHaveValue('')
     })
 
     it('초기 value가 표시되어야 한다', () => {
       render(<LanguageFilter value="JavaScript" onChange={() => {}} />)
-      const input = screen.getByLabelText(/language/i)
+      const input = screen.getByLabelText(/언어/i)
       expect(input).toHaveValue('JavaScript')
     })
 
     it('도움말 텍스트가 표시되어야 한다', () => {
       render(<LanguageFilter value="" onChange={() => {}} />)
       expect(
-        screen.getByText(/filter by programming language/i)
+        screen.getByText(/프로그래밍 언어로 필터링/i)
       ).toBeInTheDocument()
     })
 
@@ -39,7 +39,7 @@ describe('LanguageFilter', () => {
       const handleChange = jest.fn()
       render(<LanguageFilter value="" onChange={handleChange} />)
 
-      const input = screen.getByLabelText(/language/i)
+      const input = screen.getByLabelText(/언어/i)
       await user.type(input, 'J')
 
       expect(handleChange).toHaveBeenCalled()
@@ -51,7 +51,7 @@ describe('LanguageFilter', () => {
       const handleChange = jest.fn()
       render(<LanguageFilter value="JavaScript" onChange={handleChange} />)
 
-      const input = screen.getByLabelText(/language/i)
+      const input = screen.getByLabelText(/언어/i)
       await user.clear(input)
 
       expect(handleChange).toHaveBeenCalledWith('')
@@ -61,7 +61,7 @@ describe('LanguageFilter', () => {
       const user = userEvent.setup()
       render(<LanguageFilter value="" onChange={() => {}} />)
 
-      const input = screen.getByLabelText(/language/i)
+      const input = screen.getByLabelText(/언어/i)
       await user.click(input)
 
       // 인기 언어들이 옵션으로 표시되어야 함
@@ -76,7 +76,7 @@ describe('LanguageFilter', () => {
       const user = userEvent.setup()
       render(<LanguageFilter value="" onChange={() => {}} />)
 
-      const input = screen.getByLabelText(/language/i)
+      const input = screen.getByLabelText(/언어/i)
       await user.type(input, 'Java')
 
       // Java로 시작하는 언어들
@@ -88,7 +88,7 @@ describe('LanguageFilter', () => {
       const user = userEvent.setup()
       render(<LanguageFilter value="" onChange={() => {}} />)
 
-      const input = screen.getByLabelText(/language/i)
+      const input = screen.getByLabelText(/언어/i)
       await user.type(input, 'python')
 
       expect(screen.getByText('Python')).toBeInTheDocument()
@@ -99,7 +99,7 @@ describe('LanguageFilter', () => {
     it('onChange가 제공되지 않아도 렌더링되어야 한다', () => {
       // @ts-expect-error Testing without onChange
       render(<LanguageFilter value="" />)
-      expect(screen.getByLabelText(/language/i)).toBeInTheDocument()
+      expect(screen.getByLabelText(/언어/i)).toBeInTheDocument()
     })
 
     it('목록에 없는 커스텀 언어를 입력할 수 있어야 한다', async () => {
@@ -107,7 +107,7 @@ describe('LanguageFilter', () => {
       const handleChange = jest.fn()
       render(<LanguageFilter value="" onChange={handleChange} />)
 
-      const input = screen.getByLabelText(/language/i)
+      const input = screen.getByLabelText(/언어/i)
       await user.type(input, 'E')
 
       expect(handleChange).toHaveBeenCalledWith('E')
@@ -117,13 +117,13 @@ describe('LanguageFilter', () => {
   describe('접근성', () => {
     it('label이 input과 올바르게 연결되어 있어야 한다', () => {
       render(<LanguageFilter value="" onChange={() => {}} />)
-      const input = screen.getByLabelText(/language/i)
+      const input = screen.getByLabelText(/언어/i)
       expect(input).toHaveAttribute('id')
     })
 
     it('placeholder가 표시되어야 한다', () => {
       render(<LanguageFilter value="" onChange={() => {}} />)
-      const input = screen.getByPlaceholderText(/e\.g\. JavaScript, Python/i)
+      const input = screen.getByPlaceholderText(/예: JavaScript, Python/i)
       expect(input).toBeInTheDocument()
     })
   })

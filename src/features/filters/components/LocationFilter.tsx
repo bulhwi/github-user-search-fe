@@ -21,15 +21,15 @@ export function LocationFilter({
   return (
     <TextField
       id="location-filter"
-      label="Location"
+      label="위치"
       value={value}
       onChange={handleChange}
-      placeholder="e.g. Seoul, San Francisco"
-      helperText="Search by location (city, country, etc.)"
+      placeholder="예: 서울, 샌프란시스코"
+      helperText="위치로 검색 (도시, 국가 등)"
       fullWidth
       className={className}
       inputProps={{
-        'aria-label': 'Location',
+        'aria-label': '위치',
       }}
     />
   )

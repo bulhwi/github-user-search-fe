@@ -110,7 +110,7 @@ export function UserList({
       )}
 
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-        {totalCount !== undefined ? totalCount : users.length} results
+        {totalCount !== undefined ? totalCount : users.length} 결과
       </Typography>
 
       <InfiniteScroll

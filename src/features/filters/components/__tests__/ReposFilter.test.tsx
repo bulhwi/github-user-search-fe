@@ -11,8 +11,8 @@ function ControlledReposFilter({ initialValue = {}, className }: { initialValue?
 }
 
 describe('ReposFilter', () => {
-  const getMinInput = () => screen.getByRole('spinbutton', { name: /min repositories/i }) as HTMLInputElement
-  const getMaxInput = () => screen.getByRole('spinbutton', { name: /max repositories/i }) as HTMLInputElement
+  const getMinInput = () => screen.getByRole('spinbutton', { name: /최소 리포지토리/i }) as HTMLInputElement
+  const getMaxInput = () => screen.getByRole('spinbutton', { name: /최대 리포지토리/i }) as HTMLInputElement
 
   describe('렌더링 - 성공 케이스', () => {
     it('Min과 Max 입력 필드를 렌더링해야 한다', () => {
@@ -45,7 +45,7 @@ describe('ReposFilter', () => {
       render(<ReposFilter value={{}} onChange={onChange} />)
 
       expect(
-        screen.getByText('Filter by public repository count')
+        screen.getByText('리포지토리 수로 필터링')
       ).toBeInTheDocument()
     })
 
@@ -177,7 +177,7 @@ describe('ReposFilter', () => {
       render(<ReposFilter value={{ min: 100, max: 50 }} onChange={onChange} />)
 
       expect(
-        screen.getByText('Min must be less than or equal to Max')
+        screen.getByText('최소값은 최대값보다 작거나 같아야 합니다')
       ).toBeInTheDocument()
     })
 
@@ -187,7 +187,7 @@ describe('ReposFilter', () => {
       render(<ReposFilter value={{ min: 50, max: 100 }} onChange={onChange} />)
 
       expect(
-        screen.queryByText('Min must be less than or equal to Max')
+        screen.queryByText('최소값은 최대값보다 작거나 같아야 합니다')
       ).not.toBeInTheDocument()
     })
 
@@ -197,7 +197,7 @@ describe('ReposFilter', () => {
       render(<ReposFilter value={{ min: 50, max: 50 }} onChange={onChange} />)
 
       expect(
-        screen.queryByText('Min must be less than or equal to Max')
+        screen.queryByText('최소값은 최대값보다 작거나 같아야 합니다')
       ).not.toBeInTheDocument()
     })
   })

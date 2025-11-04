@@ -34,12 +34,12 @@ export function LanguageFilter({
         <TextField
           {...params}
           id="language-filter"
-          label="Language"
-          placeholder="e.g. JavaScript, Python"
-          helperText="Filter by programming language"
+          label="언어"
+          placeholder="예: JavaScript, Python"
+          helperText="프로그래밍 언어로 필터링"
           inputProps={{
             ...params.inputProps,
-            'aria-label': 'Language',
+            'aria-label': '언어',
           }}
         />
       )}

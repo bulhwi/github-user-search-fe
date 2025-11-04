@@ -12,9 +12,9 @@ export interface TypeFilterProps {
 type TypeFilterValue = 'all' | 'user' | 'org'
 
 const typeOptions: SelectOption<TypeFilterValue>[] = [
-  { value: 'all', label: 'All' },
-  { value: 'user', label: 'Users' },
-  { value: 'org', label: 'Organizations' },
+  { value: 'all', label: '전체' },
+  { value: 'user', label: '사용자' },
+  { value: 'org', label: '조직' },
 ]
 
 export function TypeFilter({ value, onChange, className }: TypeFilterProps) {
@@ -31,11 +31,11 @@ export function TypeFilter({ value, onChange, className }: TypeFilterProps) {
   return (
     <Select<TypeFilterValue>
       id="type-filter"
-      label="Account Type"
+      label="계정 타입"
       value={selectValue}
       options={typeOptions}
       onChange={handleChange}
-      helperText="Filter by user or organization"
+      helperText="사용자 또는 조직으로 필터링"
       className={className}
     />
   )

@@ -8,18 +8,18 @@ describe('SearchInFilter', () => {
       const onChange = jest.fn()
       render(<SearchInFilter value={['login']} onChange={onChange} />)
 
-      expect(screen.getByLabelText('Login')).toBeInTheDocument()
-      expect(screen.getByLabelText('Name')).toBeInTheDocument()
-      expect(screen.getByLabelText('Email')).toBeInTheDocument()
+      expect(screen.getByLabelText('사용자명')).toBeInTheDocument()
+      expect(screen.getByLabelText('이름')).toBeInTheDocument()
+      expect(screen.getByLabelText('이메일')).toBeInTheDocument()
     })
 
     it('선택된 필드가 체크되어야 한다', () => {
       const onChange = jest.fn()
       render(<SearchInFilter value={['login', 'name']} onChange={onChange} />)
 
-      expect(screen.getByLabelText('Login')).toBeChecked()
-      expect(screen.getByLabelText('Name')).toBeChecked()
-      expect(screen.getByLabelText('Email')).not.toBeChecked()
+      expect(screen.getByLabelText('사용자명')).toBeChecked()
+      expect(screen.getByLabelText('이름')).toBeChecked()
+      expect(screen.getByLabelText('이메일')).not.toBeChecked()
     })
 
     it('도움말 텍스트를 표시해야 한다', () => {
@@ -28,7 +28,7 @@ describe('SearchInFilter', () => {
 
       expect(
         screen.getByText(
-          'Search in login, name, or email (at least one required)'
+          '사용자명, 이름, 이메일에서 검색 (최소 1개 필수)'
         )
       ).toBeInTheDocument()
     })
@@ -55,7 +55,7 @@ describe('SearchInFilter', () => {
 
       render(<SearchInFilter value={['login']} onChange={onChange} />)
 
-      const emailCheckbox = screen.getByLabelText('Email')
+      const emailCheckbox = screen.getByLabelText('이메일')
       await user.click(emailCheckbox)
 
       expect(onChange).toHaveBeenCalledWith(['login', 'email'])
@@ -67,7 +67,7 @@ describe('SearchInFilter', () => {
 
       render(<SearchInFilter value={['login']} onChange={onChange} />)
 
-      const nameCheckbox = screen.getByLabelText('Name')
+      const nameCheckbox = screen.getByLabelText('이름')
       await user.click(nameCheckbox)
 
       expect(onChange).toHaveBeenCalledWith(['login', 'name'])
@@ -81,7 +81,7 @@ describe('SearchInFilter', () => {
       render(<SearchInFilter value={['login']} onChange={onChange} />)
 
       // Name 추가
-      const nameCheckbox = screen.getByLabelText('Name')
+      const nameCheckbox = screen.getByLabelText('이름')
       await user.click(nameCheckbox)
       expect(onChange).toHaveBeenLastCalledWith(['login', 'name'])
 
@@ -97,7 +97,7 @@ describe('SearchInFilter', () => {
 
       render(<SearchInFilter value={['login', 'name']} onChange={onChange} />)
 
-      const nameCheckbox = screen.getByLabelText('Name')
+      const nameCheckbox = screen.getByLabelText('이름')
       await user.click(nameCheckbox)
 
       expect(onChange).toHaveBeenCalledWith(['login'])
@@ -109,7 +109,7 @@ describe('SearchInFilter', () => {
 
       render(<SearchInFilter value={['login']} onChange={onChange} />)
 
-      const loginCheckbox = screen.getByLabelText('Login')
+      const loginCheckbox = screen.getByLabelText('사용자명')
       await user.click(loginCheckbox)
 
       // onChange가 호출되지 않아야 함 (최소 1개 유지)
@@ -122,7 +122,7 @@ describe('SearchInFilter', () => {
 
       render(<SearchInFilter value={['login', 'name', 'email']} onChange={onChange} />)
 
-      const emailCheckbox = screen.getByLabelText('Email')
+      const emailCheckbox = screen.getByLabelText('이메일')
       await user.click(emailCheckbox)
 
       expect(onChange).toHaveBeenCalledWith(['login', 'name'])
@@ -134,17 +134,17 @@ describe('SearchInFilter', () => {
       const onChange = jest.fn()
       render(<SearchInFilter value={[]} onChange={onChange} />)
 
-      expect(screen.getByLabelText('Login')).toBeInTheDocument()
-      expect(screen.getByLabelText('Name')).toBeInTheDocument()
-      expect(screen.getByLabelText('Email')).toBeInTheDocument()
+      expect(screen.getByLabelText('사용자명')).toBeInTheDocument()
+      expect(screen.getByLabelText('이름')).toBeInTheDocument()
+      expect(screen.getByLabelText('이메일')).toBeInTheDocument()
     })
 
     it('중복된 값이 있는 배열도 처리해야 한다', () => {
       const onChange = jest.fn()
       render(<SearchInFilter value={['login', 'login', 'name']} onChange={onChange} />)
 
-      expect(screen.getByLabelText('Login')).toBeChecked()
-      expect(screen.getByLabelText('Name')).toBeChecked()
+      expect(screen.getByLabelText('사용자명')).toBeChecked()
+      expect(screen.getByLabelText('이름')).toBeChecked()
     })
 
     it('잘못된 값이 포함된 배열도 처리해야 한다', () => {
@@ -152,9 +152,9 @@ describe('SearchInFilter', () => {
       // @ts-expect-error Testing with invalid value
       render(<SearchInFilter value={['login', 'invalid', 'name']} onChange={onChange} />)
 
-      expect(screen.getByLabelText('Login')).toBeChecked()
-      expect(screen.getByLabelText('Name')).toBeChecked()
-      expect(screen.getByLabelText('Email')).not.toBeChecked()
+      expect(screen.getByLabelText('사용자명')).toBeChecked()
+      expect(screen.getByLabelText('이름')).toBeChecked()
+      expect(screen.getByLabelText('이메일')).not.toBeChecked()
     })
   })
 
@@ -163,13 +163,13 @@ describe('SearchInFilter', () => {
       const onChange = jest.fn()
       render(<SearchInFilter value={['login']} onChange={onChange} />)
 
-      const usernameCheckbox = screen.getByLabelText('Login')
-      const nameCheckbox = screen.getByLabelText('Name')
-      const emailCheckbox = screen.getByLabelText('Email')
+      const usernameCheckbox = screen.getByLabelText('사용자명')
+      const nameCheckbox = screen.getByLabelText('이름')
+      const emailCheckbox = screen.getByLabelText('이메일')
 
-      expect(usernameCheckbox).toHaveAccessibleName('Login')
-      expect(nameCheckbox).toHaveAccessibleName('Name')
-      expect(emailCheckbox).toHaveAccessibleName('Email')
+      expect(usernameCheckbox).toHaveAccessibleName('사용자명')
+      expect(nameCheckbox).toHaveAccessibleName('이름')
+      expect(emailCheckbox).toHaveAccessibleName('이메일')
     })
 
     it('체크박스가 키보드로 조작 가능해야 한다', async () => {
@@ -194,7 +194,7 @@ describe('SearchInFilter', () => {
       // @ts-expect-error Testing without onChange
       render(<SearchInFilter value={['login']} />)
 
-      expect(screen.getByLabelText('Login')).toBeInTheDocument()
+      expect(screen.getByLabelText('사용자명')).toBeInTheDocument()
     })
   })
 })

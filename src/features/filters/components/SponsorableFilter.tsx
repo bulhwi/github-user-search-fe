@@ -28,12 +28,12 @@ export function SponsorableFilter({ value, onChange, className }: SponsorableFil
           <Switch
             checked={value || false}
             onChange={handleChange}
-            inputProps={{ 'aria-label': 'Sponsorable only' }}
+            inputProps={{ 'aria-label': '후원 가능 사용자만' }}
           />
         }
-        label="Sponsorable only"
+        label="후원 가능 사용자만"
       />
-      <FormHelperText>Show only sponsorable users</FormHelperText>
+      <FormHelperText>후원 가능한 사용자만 표시</FormHelperText>
     </FormControl>
   )
 }

@@ -14,13 +14,13 @@ describe('FollowersFilter', () => {
   const defaultValue: RangeFilter = {}
 
   // Helper functions
-  const getMinInput = () => screen.getByLabelText(/min followers/i) as HTMLInputElement
-  const getMaxInput = () => screen.getByLabelText(/max followers/i) as HTMLInputElement
+  const getMinInput = () => screen.getByLabelText(/최소 팔로워/i) as HTMLInputElement
+  const getMaxInput = () => screen.getByLabelText(/최대 팔로워/i) as HTMLInputElement
 
   describe('렌더링 - 성공 케이스', () => {
     it('기본 요소들이 표시되어야 한다', () => {
       render(<FollowersFilter value={defaultValue} onChange={() => {}} />)
-      expect(screen.getByText(/followers count/i)).toBeInTheDocument()
+      expect(screen.getByText(/팔로워 수/i)).toBeInTheDocument()
       expect(getMinInput()).toBeInTheDocument()
       expect(getMaxInput()).toBeInTheDocument()
     })
@@ -40,7 +40,7 @@ describe('FollowersFilter', () => {
 
     it('도움말 텍스트가 표시되어야 한다', () => {
       render(<FollowersFilter value={defaultValue} onChange={() => {}} />)
-      expect(screen.getByText(/filter by follower count/i)).toBeInTheDocument()
+      expect(screen.getByText(/팔로워 수로 필터링/i)).toBeInTheDocument()
     })
 
     it('커스텀 className을 적용할 수 있어야 한다', () => {
@@ -99,36 +99,36 @@ describe('FollowersFilter', () => {
       const value: RangeFilter = { min: 1000, max: 100 }
       render(<FollowersFilter value={value} onChange={() => {}} />)
 
-      expect(screen.getByText(/min must be less than or equal to max/i)).toBeInTheDocument()
+      expect(screen.getByText(/최소값은 최대값보다 작거나 같아야 합니다/i)).toBeInTheDocument()
     })
 
     it('min <= max일 때 에러가 표시되지 않아야 한다', () => {
       const value: RangeFilter = { min: 100, max: 1000 }
       render(<FollowersFilter value={value} onChange={() => {}} />)
 
-      expect(screen.queryByText(/min must be less than or equal to max/i)).not.toBeInTheDocument()
-      expect(screen.getByText(/filter by follower count/i)).toBeInTheDocument()
+      expect(screen.queryByText(/최소값은 최대값보다 작거나 같아야 합니다/i)).not.toBeInTheDocument()
+      expect(screen.getByText(/팔로워 수로 필터링/i)).toBeInTheDocument()
     })
 
     it('min만 있을 때 에러가 표시되지 않아야 한다', () => {
       const value: RangeFilter = { min: 100 }
       render(<FollowersFilter value={value} onChange={() => {}} />)
 
-      expect(screen.queryByText(/min must be less than or equal to max/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/최소값은 최대값보다 작거나 같아야 합니다/i)).not.toBeInTheDocument()
     })
 
     it('max만 있을 때 에러가 표시되지 않아야 한다', () => {
       const value: RangeFilter = { max: 1000 }
       render(<FollowersFilter value={value} onChange={() => {}} />)
 
-      expect(screen.queryByText(/min must be less than or equal to max/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/최소값은 최대값보다 작거나 같아야 합니다/i)).not.toBeInTheDocument()
     })
 
     it('min === max일 때 에러가 표시되지 않아야 한다', () => {
       const value: RangeFilter = { min: 100, max: 100 }
       render(<FollowersFilter value={value} onChange={() => {}} />)
 
-      expect(screen.queryByText(/min must be less than or equal to max/i)).not.toBeInTheDocument()
+      expect(screen.queryByText(/최소값은 최대값보다 작거나 같아야 합니다/i)).not.toBeInTheDocument()
     })
   })
 
@@ -136,7 +136,7 @@ describe('FollowersFilter', () => {
     it('onChange가 제공되지 않아도 렌더링되어야 한다', () => {
       // @ts-expect-error Testing without onChange
       render(<FollowersFilter value={defaultValue} />)
-      expect(screen.getByLabelText(/min followers/i)).toBeInTheDocument()
+      expect(screen.getByLabelText(/최소 팔로워/i)).toBeInTheDocument()
     })
 
     it('0 값을 입력할 수 있어야 한다', async () => {

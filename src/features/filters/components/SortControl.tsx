@@ -22,10 +22,10 @@ export interface SortControlProps {
 }
 
 const sortOptions: { value: SortOption; label: string }[] = [
-  { value: 'best-match', label: 'Best Match' },
-  { value: 'followers', label: 'Followers' },
-  { value: 'repositories', label: 'Repositories' },
-  { value: 'joined', label: 'Joined' },
+  { value: 'best-match', label: '최적 일치' },
+  { value: 'followers', label: '팔로워' },
+  { value: 'repositories', label: '리포지토리' },
+  { value: 'joined', label: '가입일' },
 ]
 
 export function SortControl({
@@ -53,12 +53,12 @@ export function SortControl({
     <Box className={className} sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
       {/* Sort Select */}
       <FormControl sx={{ minWidth: 200 }}>
-        <InputLabel id="sort-by-label">Sort by</InputLabel>
+        <InputLabel id="sort-by-label">정렬 기준</InputLabel>
         <Select
           labelId="sort-by-label"
           id="sort-by-select"
           value={currentSort}
-          label="Sort by"
+          label="정렬 기준"
           onChange={(e) => handleSortChange(e.target.value as SortOption)}
         >
           {sortOptions.map((option) => (
@@ -74,19 +74,19 @@ export function SortControl({
         <Tooltip
           title={
             isBestMatch
-              ? 'Order is not available for Best Match'
-              : `Click to sort in ${currentOrder === 'desc' ? 'ascending' : 'descending'} order`
+              ? '최적 일치에서는 정렬 순서를 사용할 수 없습니다'
+              : `클릭하여 ${currentOrder === 'desc' ? '오름차순' : '내림차순'}으로 정렬`
           }
         >
           <span>
             <IconButton
               onClick={handleOrderToggle}
               disabled={isBestMatch}
-              aria-label={`Sort order: ${currentOrder === 'desc' ? 'Descending' : 'Ascending'}`}
+              aria-label={`정렬 순서: ${currentOrder === 'desc' ? '내림차순' : '오름차순'}`}
               title={
                 isBestMatch
-                  ? 'Order is not available for Best Match'
-                  : `Sort order: ${currentOrder === 'desc' ? 'Descending' : 'Ascending'}`
+                  ? '최적 일치에서는 정렬 순서를 사용할 수 없습니다'
+                  : `정렬 순서: ${currentOrder === 'desc' ? '내림차순' : '오름차순'}`
               }
             >
               {currentOrder === 'desc' ? (
@@ -98,7 +98,7 @@ export function SortControl({
           </span>
         </Tooltip>
         <Typography variant="caption" color="text.secondary">
-          {currentOrder === 'desc' ? 'Descending' : 'Ascending'}
+          {currentOrder === 'desc' ? '내림차순' : '오름차순'}
         </Typography>
       </Box>
     </Box>

@@ -25,8 +25,8 @@ describe('DateRangeFilter', () => {
       renderWithProvider(
         <DateRangeFilter value={defaultValue} onChange={() => {}} />
       )
-      expect(screen.getAllByText('Created After').length).toBeGreaterThan(0)
-      expect(screen.getAllByText('Created Before').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('생성일 이후').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('생성일 이전').length).toBeGreaterThan(0)
     })
 
     it('초기 값이 비어있어야 한다', () => {
@@ -54,7 +54,7 @@ describe('DateRangeFilter', () => {
       renderWithProvider(
         <DateRangeFilter value={defaultValue} onChange={() => {}} />
       )
-      expect(screen.getByText(/filter by creation date/i)).toBeInTheDocument()
+      expect(screen.getByText(/생성일로 필터링/i)).toBeInTheDocument()
     })
 
     it('커스텀 className을 적용할 수 있어야 한다', () => {
@@ -150,7 +150,7 @@ describe('DateRangeFilter', () => {
     it('onChange가 제공되지 않아도 렌더링되어야 한다', () => {
       // @ts-expect-error Testing without onChange
       renderWithProvider(<DateRangeFilter value={defaultValue} />)
-      expect(screen.getAllByText('Created After').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('생성일 이후').length).toBeGreaterThan(0)
     })
 
     it('after만 설정된 값을 처리할 수 있어야 한다', () => {
@@ -197,8 +197,8 @@ describe('DateRangeFilter', () => {
         <DateRangeFilter value={defaultValue} onChange={() => {}} />
       )
       // MUI DatePicker는 label을 사용
-      expect(screen.getAllByText('Created After').length).toBeGreaterThan(0)
-      expect(screen.getAllByText('Created Before').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('생성일 이후').length).toBeGreaterThan(0)
+      expect(screen.getAllByText('생성일 이전').length).toBeGreaterThan(0)
     })
   })
 })

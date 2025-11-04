@@ -13,25 +13,25 @@ describe('SortControl', () => {
     it('정렬 Select가 렌더링되어야 한다', () => {
       render(<SortControl value="best-match" onChange={mockOnChange} />)
 
-      expect(screen.getByLabelText(/sort by/i)).toBeInTheDocument()
+      expect(screen.getByLabelText(/정렬 기준/i)).toBeInTheDocument()
     })
 
     it('Order 토글 버튼이 렌더링되어야 한다', () => {
       render(<SortControl value="best-match" onChange={mockOnChange} />)
 
-      expect(screen.getByRole('button', { name: /order/i })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: /정렬 순서/i })).toBeInTheDocument()
     })
 
     it('기본값으로 Best Match가 선택되어야 한다', () => {
       render(<SortControl value="best-match" onChange={mockOnChange} />)
 
-      expect(screen.getByText('Best Match')).toBeInTheDocument()
+      expect(screen.getByText('최적 일치')).toBeInTheDocument()
     })
 
     it('기본값으로 DESC (내림차순)이 선택되어야 한다', () => {
       render(<SortControl value="best-match" onChange={mockOnChange} />)
 
-      expect(screen.getByText(/desc/i)).toBeInTheDocument()
+      expect(screen.getByText(/내림차순/i)).toBeInTheDocument()
     })
   })
 
@@ -40,9 +40,9 @@ describe('SortControl', () => {
       const user = userEvent.setup()
       render(<SortControl value="followers" onChange={mockOnChange} />)
 
-      const select = screen.getByLabelText(/sort by/i)
+      const select = screen.getByLabelText(/정렬 기준/i)
       await user.click(select)
-      await user.click(screen.getByRole('option', { name: /best match/i }))
+      await user.click(screen.getByRole('option', { name: /최적 일치/i }))
 
       expect(mockOnChange).toHaveBeenCalledWith({
         sort: 'best-match',
@@ -54,9 +54,9 @@ describe('SortControl', () => {
       const user = userEvent.setup()
       render(<SortControl value="best-match" onChange={mockOnChange} />)
 
-      const select = screen.getByLabelText(/sort by/i)
+      const select = screen.getByLabelText(/정렬 기준/i)
       await user.click(select)
-      await user.click(screen.getByRole('option', { name: /followers/i }))
+      await user.click(screen.getByRole('option', { name: /팔로워/i }))
 
       expect(mockOnChange).toHaveBeenCalledWith({
         sort: 'followers',
@@ -68,9 +68,9 @@ describe('SortControl', () => {
       const user = userEvent.setup()
       render(<SortControl value="best-match" onChange={mockOnChange} />)
 
-      const select = screen.getByLabelText(/sort by/i)
+      const select = screen.getByLabelText(/정렬 기준/i)
       await user.click(select)
-      await user.click(screen.getByRole('option', { name: /repositories/i }))
+      await user.click(screen.getByRole('option', { name: /리포지토리/i }))
 
       expect(mockOnChange).toHaveBeenCalledWith({
         sort: 'repositories',
@@ -82,9 +82,9 @@ describe('SortControl', () => {
       const user = userEvent.setup()
       render(<SortControl value="best-match" onChange={mockOnChange} />)
 
-      const select = screen.getByLabelText(/sort by/i)
+      const select = screen.getByLabelText(/정렬 기준/i)
       await user.click(select)
-      await user.click(screen.getByRole('option', { name: /joined/i }))
+      await user.click(screen.getByRole('option', { name: /가입일/i }))
 
       expect(mockOnChange).toHaveBeenCalledWith({
         sort: 'joined',
@@ -98,7 +98,7 @@ describe('SortControl', () => {
       const user = userEvent.setup()
       render(<SortControl value="followers" order="desc" onChange={mockOnChange} />)
 
-      const orderButton = screen.getByRole('button', { name: /order/i })
+      const orderButton = screen.getByRole('button', { name: /정렬 순서/i })
       await user.click(orderButton)
 
       expect(mockOnChange).toHaveBeenCalledWith({
@@ -111,7 +111,7 @@ describe('SortControl', () => {
       const user = userEvent.setup()
       render(<SortControl value="followers" order="asc" onChange={mockOnChange} />)
 
-      const orderButton = screen.getByRole('button', { name: /order/i })
+      const orderButton = screen.getByRole('button', { name: /정렬 순서/i })
       await user.click(orderButton)
 
       expect(mockOnChange).toHaveBeenCalledWith({
@@ -137,21 +137,21 @@ describe('SortControl', () => {
     it('Best Match일 때 Order 버튼이 비활성화되어야 한다', () => {
       render(<SortControl value="best-match" onChange={mockOnChange} />)
 
-      const orderButton = screen.getByRole('button', { name: /order/i })
+      const orderButton = screen.getByRole('button', { name: /정렬 순서/i })
       expect(orderButton).toBeDisabled()
     })
 
     it('Best Match가 아닐 때 Order 버튼이 활성화되어야 한다', () => {
       render(<SortControl value="followers" onChange={mockOnChange} />)
 
-      const orderButton = screen.getByRole('button', { name: /order/i })
+      const orderButton = screen.getByRole('button', { name: /정렬 순서/i })
       expect(orderButton).not.toBeDisabled()
     })
 
     it('Best Match일 때 Order 버튼에 툴팁이 표시되어야 한다', () => {
       render(<SortControl value="best-match" onChange={mockOnChange} />)
 
-      const orderButton = screen.getByRole('button', { name: /order/i })
+      const orderButton = screen.getByRole('button', { name: /정렬 순서/i })
       expect(orderButton).toHaveAttribute('title')
     })
   })
@@ -160,19 +160,19 @@ describe('SortControl', () => {
     it('선택된 정렬 옵션이 Select에 표시되어야 한다', () => {
       render(<SortControl value="followers" onChange={mockOnChange} />)
 
-      expect(screen.getByText('Followers')).toBeInTheDocument()
+      expect(screen.getByText('팔로워')).toBeInTheDocument()
     })
 
     it('Order가 DESC일 때 "Descending" 텍스트가 표시되어야 한다', () => {
       render(<SortControl value="followers" order="desc" onChange={mockOnChange} />)
 
-      expect(screen.getByText(/descending/i)).toBeInTheDocument()
+      expect(screen.getByText(/내림차순/i)).toBeInTheDocument()
     })
 
     it('Order가 ASC일 때 "Ascending" 텍스트가 표시되어야 한다', () => {
       render(<SortControl value="followers" order="asc" onChange={mockOnChange} />)
 
-      expect(screen.getByText(/ascending/i)).toBeInTheDocument()
+      expect(screen.getByText(/오름차순/i)).toBeInTheDocument()
     })
   })
 
@@ -180,14 +180,14 @@ describe('SortControl', () => {
     it('Select에 label이 연결되어 있어야 한다', () => {
       render(<SortControl value="best-match" onChange={mockOnChange} />)
 
-      const select = screen.getByLabelText(/sort by/i)
+      const select = screen.getByLabelText(/정렬 기준/i)
       expect(select).toBeInTheDocument()
     })
 
     it('Order 버튼에 aria-label이 설정되어야 한다', () => {
       render(<SortControl value="followers" onChange={mockOnChange} />)
 
-      const orderButton = screen.getByRole('button', { name: /order/i })
+      const orderButton = screen.getByRole('button', { name: /정렬 순서/i })
       expect(orderButton).toHaveAttribute('aria-label')
     })
   })
@@ -196,13 +196,13 @@ describe('SortControl', () => {
     it('value가 없으면 best-match를 기본값으로 사용해야 한다', () => {
       render(<SortControl value={undefined as any} onChange={mockOnChange} />)
 
-      expect(screen.getByText('Best Match')).toBeInTheDocument()
+      expect(screen.getByText('최적 일치')).toBeInTheDocument()
     })
 
     it('order가 없으면 desc를 기본값으로 사용해야 한다', () => {
       render(<SortControl value="followers" order={undefined} onChange={mockOnChange} />)
 
-      expect(screen.getByText(/desc/i)).toBeInTheDocument()
+      expect(screen.getByText(/내림차순/i)).toBeInTheDocument()
     })
   })
 

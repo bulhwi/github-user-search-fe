@@ -15,7 +15,7 @@ describe('SponsorableFilter', () => {
   describe('렌더링 - 성공 케이스', () => {
     it('기본 요소들이 표시되어야 한다', () => {
       render(<SponsorableFilter value={defaultValue} onChange={() => {}} />)
-      expect(screen.getByText(/sponsorable only/i)).toBeInTheDocument()
+      expect(screen.getByText(/후원 가능 사용자만/i)).toBeInTheDocument()
       expect(screen.getByRole('checkbox')).toBeInTheDocument()
     })
 
@@ -33,7 +33,7 @@ describe('SponsorableFilter', () => {
 
     it('도움말 텍스트가 표시되어야 한다', () => {
       render(<SponsorableFilter value={defaultValue} onChange={() => {}} />)
-      expect(screen.getByText(/show only sponsorable users/i)).toBeInTheDocument()
+      expect(screen.getByText(/후원 가능한 사용자만 표시/i)).toBeInTheDocument()
     })
 
     it('커스텀 className을 적용할 수 있어야 한다', () => {
@@ -89,7 +89,7 @@ describe('SponsorableFilter', () => {
       const handleChange = jest.fn()
       render(<SponsorableFilter value={false} onChange={handleChange} />)
 
-      await user.click(screen.getByText(/sponsorable only/i))
+      await user.click(screen.getByText(/후원 가능 사용자만/i))
 
       expect(handleChange).toHaveBeenCalledWith(true)
     })
@@ -131,13 +131,13 @@ describe('SponsorableFilter', () => {
 
     it('FormControlLabel이 스위치와 연결되어야 한다', () => {
       render(<SponsorableFilter value={defaultValue} onChange={() => {}} />)
-      const label = screen.getByText(/sponsorable only/i)
+      const label = screen.getByText(/후원 가능 사용자만/i)
       expect(label).toBeInTheDocument()
     })
 
     it('도움말 텍스트가 있어야 한다', () => {
       render(<SponsorableFilter value={defaultValue} onChange={() => {}} />)
-      expect(screen.getByText(/show only sponsorable users/i)).toBeInTheDocument()
+      expect(screen.getByText(/후원 가능한 사용자만 표시/i)).toBeInTheDocument()
     })
   })
 

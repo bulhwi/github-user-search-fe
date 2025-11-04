@@ -33,18 +33,18 @@ export function ReposFilter({ value, onChange, className }: ReposFilterProps) {
 
   return (
     <FormControl fullWidth className={className}>
-      <FormLabel id="repos-filter-label">Repository Count</FormLabel>
+      <FormLabel id="repos-filter-label">리포지토리 수</FormLabel>
       <Box sx={{ display: 'flex', gap: 2, mt: 1 }}>
         <TextField
           id="repos-min"
-          label="Min Repositories"
+          label="최소 리포지토리"
           type="number"
           value={min ?? ''}
           onChange={handleMinChange}
           inputProps={{
             min: 0,
             step: 1,
-            'aria-label': 'Min Repositories',
+            'aria-label': '최소 리포지토리',
           }}
           error={isInvalid}
           fullWidth
@@ -52,14 +52,14 @@ export function ReposFilter({ value, onChange, className }: ReposFilterProps) {
         />
         <TextField
           id="repos-max"
-          label="Max Repositories"
+          label="최대 리포지토리"
           type="number"
           value={max ?? ''}
           onChange={handleMaxChange}
           inputProps={{
             min: 0,
             step: 1,
-            'aria-label': 'Max Repositories',
+            'aria-label': '최대 리포지토리',
           }}
           error={isInvalid}
           fullWidth
@@ -67,9 +67,9 @@ export function ReposFilter({ value, onChange, className }: ReposFilterProps) {
         />
       </Box>
       {isInvalid ? (
-        <FormHelperText error>Min must be less than or equal to Max</FormHelperText>
+        <FormHelperText error>최소값은 최대값보다 작거나 같아야 합니다</FormHelperText>
       ) : (
-        <FormHelperText>Filter by public repository count</FormHelperText>
+        <FormHelperText>리포지토리 수로 필터링</FormHelperText>
       )}
     </FormControl>
   )
