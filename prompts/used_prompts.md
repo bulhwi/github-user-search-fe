@@ -1701,6 +1701,193 @@ TDD 방식으로 무한 스크롤 페이징 기능 구현 완료
 - observe/unobserve/disconnect 검증
 
 ---
+### 프롬프트 22: Feature #3 구현 - 리포지토리 수 검색 (TDD)
+**사용한 도구**: Claude Code
+**날짜**: 2025-11-04
+
+**프롬프트**:
+```
+Feature #3부터 진행해보자.
+1. Feature #3 작업 진행.
+2. 테스트 코드 작성
+3. 프롬프트 업데이트
+
+진행해.
+```
+
+**작업 내용**:
+TDD 방식으로 리포지토리 수 검색 기능 (Feature #3) 구현
+
+#### 1. ReposFilter 컴포넌트 테스트 작성 (Red)
+**파일**: `src/features/filters/components/ReposFilter.test.tsx` (27 tests)
+
+**테스트 구조**:
+- **렌더링**: Min/Max 입력 필드, 초기값, 도움말, className
+- **사용자 상호작용**:
+  - Min 입력: 값 입력, 값만 입력, 값 변경, 값 지우기
+  - Max 입력: 값 입력, 값만 입력, 값 변경
+  - 범위 입력: Min+Max 입력, Max 먼저 입력
+- **유효성 검증**:
+  - 음수 입력 방지 (min="0")
+  - Min ≤ Max 검증 및 에러 메시지
+  - Min = Max 허용
+- **Edge Cases**: 0값, 큰 숫자, 소수점 방지, onChange 없이 렌더링, Min만/Max만
+- **접근성**: aria-label, 키보드 조작
+
+**테스트 실행**: ❌ 컴포넌트 없음 (Red 상태)
+
+#### 2. ReposFilter 컴포넌트 구현 (Green)
+**파일**: `src/features/filters/components/ReposFilter.tsx`
+
+**컴포넌트 구조**:
+```tsx
+export interface ReposFilterProps {
+  value: RangeFilter
+  onChange: (range: RangeFilter) => void
+  className?: string
+}
+```
+
+**구현 내용**:
+- MUI FormControl + TextField (type="number")
+- Min/Max 입력 필드 (Box로 가로 배치)
+- 유효성 검증: `min !== undefined && max !== undefined && min > max`
+- 에러 메시지: "Min must be less than or equal to Max"
+- 도움말: "Filter by public repository count"
+- inputProps: `min: 0, step: 1, aria-label`
+
+**handleMinChange/handleMaxChange**:
+- 빈 문자열 → undefined
+- Number() 변환
+- spread 연산자로 기존 값 유지
+
+**첫 번째 테스트 실패 원인**:
+- MUI TextField의 label이 getByLabelText와 호환되지 않음
+- 해결: `getByRole('spinbutton', { name: /min repositories/i })` 사용
+- inputProps에 `aria-label` 추가
+
+**두 번째 테스트 실패 원인**:
+- `user.type('10')`은 '1', '0'을 순차 입력
+- Controlled component에서 value prop이 업데이트되지 않음
+- 해결: ControlledReposFilter wrapper 생성 (useState 사용)
+
+**결과**: ✅ 27/27 tests passed
+
+#### 3. Application Layer 업데이트
+**파일**: `src/features/filters/hooks/useFilters.ts`
+
+**수정 내용**:
+- RangeFilter 타입 import
+- `setRepos` 함수 시그니처 변경:
+  ```typescript
+  // Before
+  const setRepos = (min?: number, max?: number) => { ... }
+
+  // After
+  const setRepos = (repos: RangeFilter) => {
+    dispatch(setFilters({ repos }))
+    dispatch(searchUsers({ query, page: 1 }))
+  }
+  ```
+
+#### 4. Presentation Layer 통합
+**FilterPanel.tsx 수정**:
+- ReposFilter import
+- FilterPanelProps에 repos, onReposChange 추가
+- ReposFilter 컴포넌트 추가 (SearchInFilter 아래)
+
+**page.tsx 수정**:
+- useFilters에서 setRepos 가져오기
+- FilterPanel에 repos, onReposChange props 전달
+
+#### 5. 전체 테스트 & 빌드
+**테스트 결과**:
+- ✅ ReposFilter: 27 tests passed
+- ✅ 전체: **224 tests passed** (기존 197 + 신규 27)
+- ✅ Test Suites: 9 passed
+
+**빌드 결과**:
+- ✅ Production build successful
+- ✅ First Load JS: **172 kB**
+- ✅ No TypeScript errors
+- ✅ No ESLint errors
+
+#### 6. Git 커밋
+**커밋 메시지**:
+```
+feat(Feature #3): implement repository count filter
+
+Feature #3 구현: 리포지토리 수 검색 (repos:>n, repos:<n)
+
+## TDD 방식 구현
+- ReposFilter.test.tsx: 27개 테스트
+- ReposFilter.tsx: Repos 범위 필터 UI
+- useFilters.ts: setRepos 함수 업데이트
+- FilterPanel, page.tsx 통합
+
+✅ 224 tests passed
+✅ Production build successful
+```
+
+**Commit**: b7904ea
+
+#### 7. Issue #3 완료 처리
+**GitHub Issue #3 Close**:
+- Acceptance Criteria 모두 충족
+- 테스트 결과 및 구현 파일 목록 포함
+- 완료 코멘트 작성
+
+#### TDD 프로세스 학습
+**Red → Green → Refactor**:
+1. **Red**: 테스트 먼저 작성 (실패 확인)
+   - 27개 테스트 케이스 작성
+   - 컴포넌트 없음 에러 확인
+
+2. **Green**: 최소한의 코드로 테스트 통과
+   - ReposFilter 컴포넌트 구현
+   - MUI TextField + 유효성 검증
+   - Controlled component wrapper for testing
+
+3. **Refactor**: 코드 개선
+   - getByRole 사용으로 접근성 개선
+   - ControlledReposFilter wrapper로 테스트 안정화
+   - inputProps aria-label 추가
+
+#### 기술 포인트
+**Controlled Component Testing**:
+- useState wrapper 사용
+- value prop 업데이트 자동화
+- onChange 호출 시 리렌더링 보장
+
+**MUI TextField Testing**:
+- `type="number"` → `role="spinbutton"`
+- label prop은 getByLabelText와 비호환
+- inputProps의 aria-label 사용
+
+**사용자 입력 테스트**:
+- `user.type('10')`: '1', '0' 순차 입력
+- `toHaveBeenLastCalledWith`: 마지막 호출 검증
+- `user.clear()`: 입력 필드 비우기
+
+#### 구현 파일
+**신규 생성** (2개):
+1. `src/features/filters/components/ReposFilter.tsx`
+2. `src/features/filters/components/ReposFilter.test.tsx`
+
+**수정** (3개):
+1. `src/features/filters/hooks/useFilters.ts`
+2. `src/features/filters/components/FilterPanel.tsx`
+3. `src/app/page.tsx`
+
+**결과**:
+- ✅ Feature #3 완전 구현
+- ✅ TDD 프로세스 준수
+- ✅ 27개 신규 테스트 추가
+- ✅ 전체 224 테스트 통과
+- ✅ Production 빌드 성공
+- ✅ Issue #3 완료
+
+---
 
 ## 작성 가이드
 
