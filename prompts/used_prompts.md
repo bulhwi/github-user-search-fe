@@ -4626,3 +4626,796 @@ gh issue close 12 --comment "✅ Feature #12 구현 완료"
 4. **TypeScript Payload**: 단일 값 → 객체로 변경 시 기존 테스트 수정 필요
 5. **자동 재검색**: 정렬 변경 시 즉시 handleSearch() 호출
 
+
+---
+
+# Prompt #16
+
+**요청**: "[UI/UX] 다크모드 지원 (System Preference) #14 진행해보자"
+
+**날짜**: 2025-11-05
+
+**목표**: GitHub User Search 앱에 다크모드 지원 추가 (시스템 Preference 자동 감지 + 수동 토글)
+
+**컨텍스트**:
+- Feature #12 (정렬 기능) 완료 후 다음 기능 구현
+- Issue #14: 다크모드 지원 (System Preference 감지, 수동 토글, localStorage 저장)
+- Material-UI 테마 시스템 활용
+- 402 tests passing 상태에서 시작
+
+---
+
+## 1. Issue #14 분석
+
+### 요구사항
+```markdown
+## 📋 Feature Description
+사용자의 시스템 설정에 따라 자동으로 Light/Dark 테마를 적용하고,
+수동으로 테마를 전환할 수 있는 기능을 구현합니다.
+
+## 🎯 Acceptance Criteria
+- [ ] 시스템 Preference (prefers-color-scheme) 자동 감지
+- [ ] 수동 테마 토글 버튼 (헤더에 배치)
+- [ ] localStorage에 사용자 선택 저장
+- [ ] Material-UI 테마 시스템 활용 (Light/Dark 팔레트)
+- [ ] 모든 컴포넌트에서 테마 적용 확인
+```
+
+### 기술 스택
+- **Material-UI Theme**: createTheme, ThemeProvider, palette.mode
+- **React Hooks**: useEffect, useAppSelector, useAppDispatch
+- **Browser API**: window.matchMedia('prefers-color-scheme: dark')
+- **localStorage**: 테마 선택 저장/로드
+- **Redux**: uiSlice.themeMode 상태 관리
+
+---
+
+## 2. 구현 계획 (TODO List)
+
+```
+1. ✅ Create MUI theme configuration (light/dark)
+2. ✅ Create useTheme hook with system preference detection
+3. ✅ Create ThemeToggle component with tests
+4. ✅ Integrate ThemeProvider in app layout
+5. ✅ Update uiSlice for theme state management (기존 state 활용)
+6. ✅ Add localStorage persistence
+7. ✅ Test dark mode in all components
+8. ✅ Run all tests and build
+9. ✅ Commit and document Feature #14
+```
+
+---
+
+## 3. 구현 세부사항
+
+### Phase 1: Theme Configuration (theme.ts)
+
+**파일**: `src/app/theme.ts` (118 lines)
+
+#### Light Theme
+```typescript
+export const lightTheme = createTheme({
+  palette: {
+    mode: 'light',
+    primary: {
+      main: '#1976d2', // Blue
+      light: '#42a5f5',
+      dark: '#1565c0',
+      contrastText: '#ffffff',
+    },
+    secondary: {
+      main: '#dc004e', // Pink
+      light: '#f73378',
+      dark: '#9a0036',
+      contrastText: '#ffffff',
+    },
+    background: {
+      default: '#ffffff',
+      paper: '#f5f5f5',
+    },
+    text: {
+      primary: 'rgba(0, 0, 0, 0.87)',
+      secondary: 'rgba(0, 0, 0, 0.6)',
+    },
+  },
+})
+```
+
+#### Dark Theme
+```typescript
+export const darkTheme = createTheme({
+  palette: {
+    mode: 'dark',
+    primary: {
+      main: '#90caf9', // Light Blue
+      light: '#b3d9ff',
+      dark: '#5d99c6',
+      contrastText: 'rgba(0, 0, 0, 0.87)',
+    },
+    secondary: {
+      main: '#f48fb1', // Light Pink
+      light: '#ffc1e3',
+      dark: '#c25e82',
+      contrastText: 'rgba(0, 0, 0, 0.87)',
+    },
+    background: {
+      default: '#121212',
+      paper: '#1e1e1e',
+    },
+    text: {
+      primary: '#ffffff',
+      secondary: 'rgba(255, 255, 255, 0.7)',
+    },
+  },
+  components: {
+    MuiCard: {
+      styleOverrides: {
+        root: {
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
+          backgroundImage: 'none', // MUI 다크모드 기본 gradient 제거
+        },
+      },
+    },
+  },
+})
+```
+
+#### Helper Function
+```typescript
+export function getTheme(mode: 'light' | 'dark') {
+  return mode === 'light' ? lightTheme : darkTheme
+}
+```
+
+**주요 결정**:
+- Material Design 컬러 팔레트 사용
+- Dark Mode: 명도 높은 Primary/Secondary 색상 (대비 향상)
+- Card 컴포넌트: Dark Mode에서 gradient 제거 (평면 디자인)
+
+---
+
+### Phase 2: useTheme Hook (shared/hooks/useTheme.ts)
+
+**파일**: `src/shared/hooks/useTheme.ts` (115 lines)
+
+#### System Preference 감지
+```typescript
+function getSystemPreference(): 'light' | 'dark' {
+  if (typeof window === 'undefined') return 'light'
+
+  return window.matchMedia('(prefers-color-scheme: dark)').matches
+    ? 'dark'
+    : 'light'
+}
+```
+
+#### localStorage 저장/로드
+```typescript
+const THEME_STORAGE_KEY = 'github-user-search-theme'
+
+function getStoredTheme(): ThemeMode | null {
+  if (typeof window === 'undefined') return null
+
+  try {
+    const stored = localStorage.getItem(THEME_STORAGE_KEY)
+    if (stored === 'light' || stored === 'dark') {
+      return stored
+    }
+  } catch (error) {
+    console.warn('Failed to load theme from localStorage:', error)
+  }
+
+  return null
+}
+
+function saveTheme(theme: ThemeMode): void {
+  if (typeof window === 'undefined') return
+
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, theme)
+  } catch (error) {
+    console.warn('Failed to save theme to localStorage:', error)
+  }
+}
+```
+
+#### useTheme Hook 구현
+```typescript
+export function useTheme() {
+  const dispatch = useAppDispatch()
+  const themeMode = useAppSelector((state) => state.ui.themeMode)
+
+  // 초기 테마 설정 (localStorage > System Preference)
+  useEffect(() => {
+    const storedTheme = getStoredTheme()
+    const systemPreference = getSystemPreference()
+
+    const initialTheme = storedTheme || systemPreference
+
+    if (initialTheme !== themeMode) {
+      dispatch(setThemeMode(initialTheme))
+    }
+  }, [dispatch, themeMode])
+
+  // 시스템 Preference 변경 감지
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
+
+    const handleChange = (e: MediaQueryListEvent) => {
+      const storedTheme = getStoredTheme()
+      if (storedTheme) return // localStorage 우선
+
+      const newTheme = e.matches ? 'dark' : 'light'
+      dispatch(setThemeMode(newTheme))
+    }
+
+    // Modern browsers
+    if (mediaQuery.addEventListener) {
+      mediaQuery.addEventListener('change', handleChange)
+      return () => mediaQuery.removeEventListener('change', handleChange)
+    }
+    // Legacy browsers (Safari < 14)
+    else if (mediaQuery.addListener) {
+      mediaQuery.addListener(handleChange)
+      return () => mediaQuery.removeListener(handleChange)
+    }
+  }, [dispatch])
+
+  // 테마 토글
+  const toggleTheme = () => {
+    const newTheme = themeMode === 'light' ? 'dark' : 'light'
+    dispatch(setThemeMode(newTheme))
+    saveTheme(newTheme)
+  }
+
+  return {
+    themeMode,
+    toggleTheme,
+    isDark: themeMode === 'dark',
+  }
+}
+```
+
+**주요 결정**:
+1. **우선순위**: localStorage > System Preference
+   - 사용자가 수동으로 선택한 테마를 최우선으로 존중
+2. **SSR Safe**: typeof window 체크로 서버 렌더링 대응
+3. **Legacy Browser Support**: addEventListener와 addListener 모두 지원
+4. **Error Handling**: localStorage 접근 실패 시 console.warn + fallback
+
+---
+
+### Phase 3: ThemeToggle Component (TDD)
+
+#### 테스트 먼저 작성 (ThemeToggle.test.tsx)
+
+**파일**: `src/shared/components/ThemeToggle.test.tsx` (176 lines, 13 tests)
+
+```typescript
+const mockToggleTheme = jest.fn()
+const mockUseTheme = jest.fn()
+
+jest.mock('@/shared/hooks/useTheme', () => ({
+  useTheme: () => mockUseTheme(),
+}))
+
+describe('ThemeToggle', () => {
+  beforeEach(() => {
+    mockToggleTheme.mockClear()
+    mockUseTheme.mockReturnValue({
+      themeMode: 'light',
+      toggleTheme: mockToggleTheme,
+      isDark: false,
+    })
+  })
+
+  describe('렌더링 - Light Mode', () => {
+    it('Light Mode일 때 Moon 아이콘이 표시되어야 한다', () => {
+      render(<ThemeToggle />)
+      expect(screen.getByTestId('Brightness4Icon')).toBeInTheDocument()
+    })
+  })
+
+  describe('렌더링 - Dark Mode', () => {
+    it('Dark Mode일 때 Sun 아이콘이 표시되어야 한다', () => {
+      mockUseTheme.mockReturnValue({
+        themeMode: 'dark',
+        toggleTheme: mockToggleTheme,
+        isDark: true,
+      })
+      render(<ThemeToggle />)
+      expect(screen.getByTestId('Brightness7Icon')).toBeInTheDocument()
+    })
+  })
+
+  describe('테마 토글 기능', () => {
+    it('버튼 클릭 시 toggleTheme이 호출되어야 한다', async () => {
+      const user = userEvent.setup()
+      render(<ThemeToggle />)
+
+      const button = screen.getByRole('button')
+      await user.click(button)
+
+      expect(mockToggleTheme).toHaveBeenCalledTimes(1)
+    })
+  })
+
+  describe('접근성', () => {
+    it('aria-label이 현재 테마 상태를 반영해야 한다', () => {
+      const { rerender } = render(<ThemeToggle />)
+      expect(screen.getByLabelText(/light mode/i)).toBeInTheDocument()
+
+      mockUseTheme.mockReturnValue({
+        themeMode: 'dark',
+        toggleTheme: mockToggleTheme,
+        isDark: true,
+      })
+
+      rerender(<ThemeToggle />)
+      expect(screen.getByLabelText(/dark mode/i)).toBeInTheDocument()
+    })
+  })
+})
+```
+
+#### 컴포넌트 구현 (ThemeToggle.tsx)
+
+**파일**: `src/shared/components/ThemeToggle.tsx` (30 lines)
+
+```typescript
+'use client'
+
+import { IconButton, Tooltip } from '@mui/material'
+import Brightness4Icon from '@mui/icons-material/Brightness4' // Moon
+import Brightness7Icon from '@mui/icons-material/Brightness7' // Sun
+import { useTheme } from '@/shared/hooks/useTheme'
+
+export interface ThemeToggleProps {
+  className?: string
+}
+
+export function ThemeToggle({ className = '' }: ThemeToggleProps) {
+  const { toggleTheme, isDark } = useTheme()
+
+  const label = isDark ? 'Dark mode' : 'Light mode'
+  const tooltipTitle = isDark ? 'Switch to light mode' : 'Switch to dark mode'
+
+  return (
+    <Tooltip title={tooltipTitle}>
+      <IconButton
+        onClick={toggleTheme}
+        color="inherit"
+        aria-label={label}
+        className={className}
+      >
+        {isDark ? <Brightness7Icon /> : <Brightness4Icon />}
+      </IconButton>
+    </Tooltip>
+  )
+}
+```
+
+**아이콘 선택 이유**:
+- `Brightness4Icon` (달 모양): Dark Mode로 전환 (현재 Light Mode)
+- `Brightness7Icon` (해 모양): Light Mode로 전환 (현재 Dark Mode)
+- Material-UI 표준 아이콘 사용
+
+#### 테스트 실행 및 에러 수정
+
+**에러 1**: MUI Tooltip + IconButton title 충돌
+```
+console.error: MUI: You have provided a `title` prop to the child of <Tooltip />.
+Remove this title prop or the Tooltip component.
+```
+
+**원인**: IconButton에 title prop 추가로 인한 중복
+**해결**: IconButton의 title prop 제거 (Tooltip만 사용)
+
+**결과**: ✅ 13 tests passed
+
+---
+
+### Phase 4: ThemeProvider Integration
+
+#### ThemeWrapper Component
+
+**파일**: `src/app/ThemeWrapper.tsx` (18 lines)
+
+```typescript
+'use client'
+
+import { ThemeProvider } from '@mui/material/styles'
+import CssBaseline from '@mui/material/CssBaseline'
+import { useAppSelector } from '@/store/hooks'
+import { getTheme } from './theme'
+
+export function ThemeWrapper({ children }: { children: React.ReactNode }) {
+  const themeMode = useAppSelector((state) => state.ui.themeMode)
+  const theme = getTheme(themeMode)
+
+  return (
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      {children}
+    </ThemeProvider>
+  )
+}
+```
+
+**설계 이유**:
+- `useAppSelector`를 사용하기 위해 별도 Client Component 필요
+- Redux Provider 내부에서 실행되어야 함
+- CssBaseline으로 전역 CSS 초기화 (테마 적용)
+
+#### Providers 업데이트
+
+**파일**: `src/app/providers.tsx` (수정)
+
+**Before**:
+```typescript
+export function Providers({ children }: { children: React.ReactNode }) {
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)')
+
+  const theme = useMemo(
+    () =>
+      createTheme({
+        palette: {
+          mode: prefersDarkMode ? 'dark' : 'light',
+        },
+      }),
+    [prefersDarkMode]
+  )
+
+  return (
+    <Provider store={store}>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        {children}
+      </ThemeProvider>
+    </Provider>
+  )
+}
+```
+
+**After**:
+```typescript
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <Provider store={store}>
+      <ThemeWrapper>{children}</ThemeWrapper>
+    </Provider>
+  )
+}
+```
+
+**변경 이유**:
+- 기존: useMediaQuery로 시스템 Preference 직접 감지 (Redux 우회)
+- 개선: ThemeWrapper로 위임 → Redux 상태 기반 테마 적용
+
+#### Page 헤더에 ThemeToggle 추가
+
+**파일**: `src/app/page.tsx` (수정)
+
+```typescript
+import { ThemeToggle } from '@/shared/components/ThemeToggle'
+
+export default function Home() {
+  // ...
+
+  return (
+    <Container maxWidth="xl" className="py-8">
+      {/* Header: Theme Toggle + Rate Limit Indicator */}
+      <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+        <ThemeToggle />
+        {rateLimit && <RateLimitIndicator rateLimit={rateLimit} />}
+      </Box>
+
+      <Typography variant="h3" component="h1" gutterBottom>
+        GitHub User Search
+      </Typography>
+      {/* ... */}
+    </Container>
+  )
+}
+```
+
+**배치 결정**:
+- 위치: 헤더 우측 상단 (RateLimitIndicator 옆)
+- flexbox gap: 1 (8px 간격)
+
+---
+
+### Phase 5: State Management (uiSlice)
+
+**파일**: `src/store/slices/uiSlice.ts` (기존 state 활용)
+
+```typescript
+export interface UIState {
+  themeMode: ThemeMode // ✅ 이미 존재
+  rateLimit: RateLimit | null
+  toasts: Toast[]
+}
+
+const initialState: UIState = {
+  themeMode: 'light', // ✅ 이미 존재
+  rateLimit: null,
+  toasts: [],
+}
+
+// Reducers
+setThemeMode: (state, action: PayloadAction<ThemeMode>) => {
+  state.themeMode = action.payload
+}, // ✅ 이미 존재
+```
+
+**결론**: uiSlice는 이미 themeMode 상태를 가지고 있어 추가 작업 불필요
+
+---
+
+## 4. 테스트 및 에러 해결
+
+### 에러 1: MUI Tooltip + IconButton Title 충돌
+
+**에러 메시지**:
+```
+console.error: MUI: You have provided a `title` prop to the child of <Tooltip />.
+Remove this title prop `Switch to dark mode` or the Tooltip component.
+```
+
+**원인**:
+```typescript
+<Tooltip title={tooltipTitle}>
+  <IconButton title={tooltipTitle}> {/* ❌ 중복 */}
+    {/* ... */}
+  </IconButton>
+</Tooltip>
+```
+
+**해결**:
+```typescript
+<Tooltip title={tooltipTitle}>
+  <IconButton> {/* ✅ title 제거 */}
+    {/* ... */}
+  </IconButton>
+</Tooltip>
+```
+
+### 에러 2: ESLint - Unused Variables (Build Error)
+
+**에러 메시지**:
+```
+./src/app/providers.tsx
+3:10  Error: 'ThemeProvider' is defined but never used.
+4:8  Error: 'CssBaseline' is defined but never used.
+7:10  Error: 'getTheme' is defined but never used.
+
+./src/shared/components/ThemeToggle.tsx
+13:11  Error: 'themeMode' is assigned a value but never used.
+```
+
+**원인**: providers.tsx 리팩토링 후 미사용 import 남음, ThemeToggle에서 themeMode 변수 미사용
+
+**해결**:
+```typescript
+// providers.tsx: 미사용 import 제거
+import { Provider } from 'react-redux'
+import { store } from '@/store'
+import { ThemeWrapper } from './ThemeWrapper'
+
+// ThemeToggle.tsx: themeMode 변수 제거
+const { toggleTheme, isDark } = useTheme() // themeMode 제거
+```
+
+### 최종 테스트 결과
+
+#### 단위 테스트
+```bash
+pnpm test
+# ✅ 415 tests passed (+13 new tests)
+# - ThemeToggle.test.tsx: 13 tests
+```
+
+#### 프로덕션 빌드
+```bash
+pnpm build
+# ✅ Build succeeded
+# Route (app)                              Size     First Load JS
+# ┌ ○ /                                    133 kB          255 kB
+# - Total change: 0 kB (테마 시스템은 빌드 사이즈에 거의 영향 없음)
+```
+
+---
+
+## 5. 아키텍처 설계 결정
+
+### 1. Theme Configuration (Centralized)
+- **결정**: `src/app/theme.ts`에 lightTheme, darkTheme 중앙 집중
+- **이유**: Material-UI Theme 객체는 크고 복잡 → 재사용성과 일관성 보장
+
+### 2. State Management (Redux)
+- **결정**: uiSlice.themeMode로 전역 테마 상태 관리
+- **이유**: 
+  - 앱 전체에서 일관된 테마 적용
+  - useTheme hook에서 Redux state 기반 로직 구현
+  - localStorage와 System Preference 우선순위 조정 용이
+
+### 3. ThemeWrapper Separation
+- **결정**: ThemeWrapper를 별도 Client Component로 분리
+- **이유**:
+  - `useAppSelector`는 Redux Provider 내부에서만 사용 가능
+  - providers.tsx 간결성 유지
+  - 테스트 용이성 (ThemeWrapper만 독립 테스트 가능)
+
+### 4. Preference Priority
+- **결정**: localStorage > System Preference
+- **이유**:
+  - 사용자가 수동으로 선택한 테마를 최우선으로 존중
+  - System Preference는 초기값으로만 사용
+  - localStorage가 있으면 System Preference 변경 무시
+
+### 5. Icon Selection
+- **결정**: Brightness4Icon (Moon) / Brightness7Icon (Sun)
+- **이유**:
+  - Material-UI 표준 아이콘 (추가 라이브러리 불필요)
+  - 직관적 의미 전달 (밤/낮 → 어두운/밝은 테마)
+
+---
+
+## 6. 커밋 및 문서화
+
+### Git Commit
+```bash
+git add src/app/ThemeWrapper.tsx src/app/theme.ts \
+        src/shared/components/ThemeToggle.test.tsx \
+        src/shared/components/ThemeToggle.tsx \
+        src/shared/hooks/useTheme.ts \
+        src/app/page.tsx src/app/providers.tsx
+
+git commit -m "feat: implement dark mode with system preference detection (#14)
+
+Feature #14: 다크모드 지원 (System Preference)
+- Material-UI 테마 시스템 구현 (Light/Dark)
+- 시스템 Preference 자동 감지 (prefers-color-scheme)
+- localStorage 저장/복원 (우선순위: localStorage > System Preference)
+- 수동 토글 기능 (IconButton with Tooltip)
+- Redux 상태 관리 (uiSlice.themeMode)
+
+## 구현 세부사항
+...
+
+## 테스트 결과
+- ✅ 415 tests passed (+13 new tests from ThemeToggle)
+- ✅ Production build: 255 kB First Load JS
+- ✅ ESLint: No errors
+
+## 변경 파일
+- 5 files added
+- 2 files modified
+
+🤖 Generated with [Claude Code]
+Co-Authored-By: Claude <noreply@anthropic.com>"
+```
+
+### 변경 파일 목록
+```
+src/app/ThemeWrapper.tsx                   |  18 +++  (NEW)
+src/app/theme.ts                           | 124 ++++  (NEW)
+src/shared/components/ThemeToggle.test.tsx | 176 ++++  (NEW)
+src/shared/components/ThemeToggle.tsx      |  30 +++  (NEW)
+src/shared/hooks/useTheme.ts               | 125 ++++  (NEW)
+src/app/page.tsx                           |  12 +-   (MODIFIED)
+src/app/providers.tsx                      |  32 +-   (MODIFIED)
+---
+7 files changed, 481 insertions(+), 36 deletions(-)
+```
+
+---
+
+## 7. 학습 포인트 및 Best Practices
+
+### 1. Material-UI Theme System
+- `createTheme()`: palette.mode로 'light'/'dark' 구분
+- `ThemeProvider`: Context API 기반 전역 테마 제공
+- `CssBaseline`: 테마 기반 전역 CSS 초기화
+
+### 2. System Preference Detection
+```typescript
+window.matchMedia('(prefers-color-scheme: dark)')
+```
+- Modern API: addEventListener('change', handler)
+- Legacy API: addListener(handler) (Safari < 14)
+
+### 3. localStorage Best Practices
+- SSR 대응: `typeof window === 'undefined'` 체크
+- Error Handling: try-catch + fallback
+- Type Safety: stored 값 타입 검증
+
+### 4. MUI Component Props
+- Tooltip + IconButton: title 중복 주의
+- aria-label: 접근성을 위해 항상 명시
+
+### 5. TDD Approach
+- Mock useTheme hook: jest.mock('@/shared/hooks/useTheme')
+- Icon TestID: Material-UI 아이콘은 자동으로 data-testid 제공
+- aria-label 테스트: getByLabelText() 사용
+
+---
+
+## 8. 리팩토링 효과
+
+### Before (기존 코드)
+- providers.tsx에서 useMediaQuery로 시스템 Preference 직접 감지
+- Redux 상태 우회 (Provider 내부에서 useSelector 불가능)
+- localStorage 저장 없음 (새로고침 시 초기화)
+- 수동 토글 기능 없음
+
+### After (Feature #14)
+- Redux 중앙 집중식 테마 관리 (uiSlice.themeMode)
+- localStorage 저장으로 사용자 선택 유지
+- System Preference 자동 감지 + 변경 감지
+- 수동 토글 버튼 (ThemeToggle)
+- 우선순위: localStorage > System Preference
+
+---
+
+## 9. 추후 개선 가능 사항
+
+### 1. Transition Animation
+```typescript
+// theme.ts에 추가
+components: {
+  MuiCssBaseline: {
+    styleOverrides: {
+      body: {
+        transition: 'background-color 0.3s ease, color 0.3s ease',
+      },
+    },
+  },
+}
+```
+
+### 2. Custom Color Picker
+- 사용자가 직접 Primary/Secondary 색상 선택
+- localStorage에 커스텀 테마 저장
+
+### 3. Auto Theme Scheduling
+- 시간대별 자동 테마 전환 (예: 저녁 7시 → Dark Mode)
+
+### 4. Theme Preview
+- 모달로 Light/Dark 테마 미리보기
+- 여러 테마 프리셋 제공 (High Contrast, Solarized, etc.)
+
+---
+
+## 10. 결과 요약
+
+### 구현 완료 기능
+- ✅ Light/Dark Theme Configuration (Material Design 팔레트)
+- ✅ System Preference 자동 감지 (prefers-color-scheme)
+- ✅ localStorage 저장/복원 (우선순위: localStorage > System Preference)
+- ✅ 수동 테마 토글 버튼 (ThemeToggle Component)
+- ✅ Redux 상태 관리 (uiSlice.themeMode)
+- ✅ 전역 ThemeProvider 적용 (ThemeWrapper)
+
+### 테스트 커버리지
+- **ThemeToggle**: 13 tests (렌더링, 토글 기능, 접근성, Edge Cases)
+- **전체**: 415 tests passed (+13)
+
+### 빌드 결과
+- **Production Build**: 255 kB First Load JS
+- **Size Impact**: 0 kB (테마 시스템은 빌드 사이즈에 거의 영향 없음)
+
+### 코드 품질
+- ✅ TypeScript Type Safety
+- ✅ ESLint: No errors
+- ✅ TDD (Test-Driven Development)
+- ✅ Accessibility (aria-label, role)
+
+---
+
+**Feature #14 완료!** 🎉
+
+**다음 Feature**: TBD (Issue #15 또는 다른 우선순위 기능)
+
