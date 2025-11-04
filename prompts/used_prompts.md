@@ -4324,3 +4324,305 @@ const progressColor =
 - ✅ Production build successful (254 kB)
 - ✅ ESLint warnings only (no errors)
 
+
+---
+
+## 날짜: 2025-11-05
+
+### 프롬프트 21: Feature #12 - 정렬 기능 (Sort + Order)
+**사용한 도구**: Claude Code
+
+**프롬프트**:
+```
+[Feature] 정렬 기능 (Sort + Order) #12 진행해보자.
+```
+
+**작업 내용**:
+
+#### 1. 요구사항 분석
+Issue #12를 읽고 구현 범위 파악:
+- SortControl 컴포넌트 (Select + Order 토글)
+- 정렬 옵션: Best Match, Followers, Repositories, Joined
+- Order: ASC/DESC 토글
+- Best Match는 order 없음 (관련성 순)
+- Redux 상태 관리
+- 정렬 변경 시 자동 재검색
+
+#### 2. 현재 상태 확인
+**파일**: `src/types/search.ts`
+```typescript
+export type SortOption = 'best-match' | 'followers' | 'repositories' | 'joined'
+```
+
+**파일**: `src/store/slices/searchSlice.ts`
+```typescript
+export interface SearchState {
+  sort: SortOption // ✅ 이미 있음
+  order: 'asc' | 'desc' // ❌ 없음 - 추가 필요
+}
+
+const initialState: SearchState = {
+  sort: 'best-match', // ✅ 이미 있음
+  // order 추가 필요
+}
+
+// setSort action 이미 있지만 order 지원 안함
+setSort: (state, action: PayloadAction<SortOption>) => {
+  state.sort = action.payload
+}
+```
+
+#### 3. SortControl 컴포넌트 (TDD)
+**테스트**: `src/features/filters/components/SortControl.test.tsx` (23 tests)
+- 렌더링: Select, Order 버튼
+- 정렬 옵션 변경: Best Match, Followers, Repositories, Joined
+- Order 토글: DESC → ASC, ASC → DESC
+- Best Match 선택 시 Order 비활성화
+- 아이콘: DESC는 ArrowDownward, ASC는 ArrowUpward
+- 접근성: label 연결, aria-label
+- Edge Cases: value undefined, order undefined
+
+**컴포넌트**: `src/features/filters/components/SortControl.tsx` (103 lines)
+```tsx
+export interface SortControlProps {
+  value: SortOption
+  order?: 'asc' | 'desc'
+  onChange: (params: { sort: SortOption; order: 'asc' | 'desc' }) => void
+  className?: string
+}
+
+const sortOptions: { value: SortOption; label: string }[] = [
+  { value: 'best-match', label: 'Best Match' },
+  { value: 'followers', label: 'Followers' },
+  { value: 'repositories', label: 'Repositories' },
+  { value: 'joined', label: 'Joined' },
+]
+
+export function SortControl({ value = 'best-match', order = 'desc', onChange }) {
+  const currentSort = value || 'best-match'
+  const currentOrder = order || 'desc'
+  const isBestMatch = currentSort === 'best-match'
+
+  const handleSortChange = (newSort: SortOption) => {
+    onChange({ sort: newSort, order: currentOrder })
+  }
+
+  const handleOrderToggle = () => {
+    if (isBestMatch) return // Best Match는 order 변경 불가
+    const newOrder = currentOrder === 'desc' ? 'asc' : 'desc'
+    onChange({ sort: currentSort, order: newOrder })
+  }
+
+  return (
+    <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+      {/* Sort Select */}
+      <FormControl sx={{ minWidth: 200 }}>
+        <InputLabel>Sort by</InputLabel>
+        <Select value={currentSort} onChange={(e) => handleSortChange(e.target.value)}>
+          {sortOptions.map((option) => (
+            <MenuItem key={option.value} value={option.value}>{option.label}</MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      {/* Order Toggle Button */}
+      <Tooltip title={isBestMatch ? 'Order is not available for Best Match' : '...'}>
+        <span>
+          <IconButton onClick={handleOrderToggle} disabled={isBestMatch}>
+            {currentOrder === 'desc' ? <ArrowDownwardIcon /> : <ArrowUpwardIcon />}
+          </IconButton>
+        </span>
+      </Tooltip>
+      <Typography variant="caption">
+        {currentOrder === 'desc' ? 'Descending' : 'Ascending'}
+      </Typography>
+    </Box>
+  )
+}
+```
+
+#### 4. SearchSlice 업데이트
+**파일**: `src/store/slices/searchSlice.ts`
+```typescript
+export interface SearchState {
+  sort: SortOption
+  order: 'asc' | 'desc' // ✅ 추가
+  // ...
+}
+
+const initialState: SearchState = {
+  sort: 'best-match',
+  order: 'desc', // ✅ 추가
+  // ...
+}
+
+// setSort action 수정 (order 지원)
+setSort: (
+  state,
+  action: PayloadAction<{ sort: SortOption; order: 'asc' | 'desc' }>
+) => {
+  state.sort = action.payload.sort
+  state.order = action.payload.order
+},
+
+// searchUsers thunk 수정 (order 파라미터 전달)
+const response = await githubApi.searchUsers({
+  query: queryString,
+  page: params.page || 1,
+  perPage: state.search.pagination.perPage,
+  sort: state.search.sort !== 'best-match' ? state.search.sort : undefined,
+  order: state.search.sort !== 'best-match' ? state.search.order : undefined, // ✅ 추가
+})
+```
+
+#### 5. SearchSlice 테스트 수정
+**파일**: `src/store/slices/searchSlice.test.ts`
+```typescript
+// Before (실패)
+setSort: (state, action: PayloadAction<SortOption>) => {
+  state.sort = action.payload
+}
+
+it('정렬 옵션을 설정해야 한다', () => {
+  const actual = searchReducer(initialState, setSort('followers'))
+  expect(actual.sort).toBe('followers') // ❌ 실패 (signature 변경됨)
+})
+
+// After (성공)
+it('정렬 옵션을 설정해야 한다', () => {
+  const actual = searchReducer(
+    initialState,
+    setSort({ sort: 'followers', order: 'desc' })
+  )
+  expect(actual.sort).toBe('followers') // ✅ 성공
+  expect(actual.order).toBe('desc') // ✅ 성공
+})
+
+it('정렬 옵션과 order를 함께 변경할 수 있어야 한다', () => {
+  const actual = searchReducer(
+    initialState,
+    setSort({ sort: 'repositories', order: 'asc' })
+  )
+  expect(actual.sort).toBe('repositories')
+  expect(actual.order).toBe('asc')
+})
+```
+
+#### 6. UI 통합
+**파일**: `src/app/page.tsx`
+```tsx
+import { useAppDispatch, useAppSelector } from '@/store/hooks'
+import { setSort } from '@/store/slices/searchSlice'
+import { SortControl } from '@/features/filters/components/SortControl'
+import type { SortOption } from '@/types'
+
+export default function Home() {
+  const dispatch = useAppDispatch()
+  
+  // 정렬 정보 가져오기
+  const sort = useAppSelector((state) => state.search.sort)
+  const order = useAppSelector((state) => state.search.order)
+
+  // 정렬 변경 핸들러
+  const handleSortChange = (params: { sort: SortOption; order: 'asc' | 'desc' }) => {
+    dispatch(setSort(params))
+    // 정렬 변경 시 재검색
+    if (query) {
+      handleSearch(query)
+    }
+  }
+
+  return (
+    <Container>
+      {/* SearchBar와 SortControl 나란히 배치 */}
+      <Box sx={{ mb: 4, display: 'flex', gap: 2, alignItems: 'flex-start' }}>
+        <SearchBar onSearch={handleSearch} initialValue={query} />
+        <SortControl value={sort} order={order} onChange={handleSortChange} />
+      </Box>
+      {/* ... */}
+    </Container>
+  )
+}
+```
+
+#### 7. MUI Select 테스트 이슈
+**문제**: MUI Select가 `<input>` 요소를 숨김 처리하여 `toHaveValue()` 실패
+```typescript
+// Before (실패)
+it('기본값으로 Best Match가 선택되어야 한다', () => {
+  render(<SortControl value="best-match" onChange={mockOnChange} />)
+  
+  const select = screen.getByLabelText(/sort by/i)
+  expect(select).toHaveValue('best-match') // ❌ 실패: undefined
+})
+```
+
+**해결**: 텍스트 노드 확인으로 변경
+```typescript
+// After (성공)
+it('기본값으로 Best Match가 선택되어야 한다', () => {
+  render(<SortControl value="best-match" onChange={mockOnChange} />)
+  
+  expect(screen.getByText('Best Match')).toBeInTheDocument() // ✅ 성공
+})
+```
+
+#### 8. ESLint 에러 수정
+**문제**: 사용하지 않는 import
+```typescript
+// SortControl.test.tsx
+import type { SortOption } from '@/types' // ❌ 사용 안함
+
+// searchSlice.test.ts
+import type { GitHubUser, SearchFilters, SortOption } from '@/types' // ❌ SortOption 사용 안함
+```
+
+**해결**: import 제거
+```typescript
+// SortControl.test.tsx
+// import 제거 ✅
+
+// searchSlice.test.ts
+import type { GitHubUser, SearchFilters } from '@/types' // ✅ SortOption 제거
+```
+
+#### 9. 테스트 및 빌드
+```bash
+# 단위 테스트: 402 tests passed (+24)
+pnpm test
+
+# SortControl: 23 tests
+# searchSlice (setSort): 3 tests (1개 추가)
+
+# 프로덕션 빌드: 255 kB (+1 kB)
+pnpm build
+```
+
+**파일 크기 변화**:
+- Before: 254 kB First Load JS
+- After: 255 kB First Load JS (+1 kB)
+
+#### 10. 커밋 및 문서화
+```bash
+git add .
+git commit -m "feat: implement Sort functionality (Feature #12)"
+git push
+
+gh issue close 12 --comment "✅ Feature #12 구현 완료"
+```
+
+**결과물**:
+- ✅ SortControl 컴포넌트 (Select + Order 토글)
+- ✅ SearchSlice order 상태 추가
+- ✅ Best Match 선택 시 Order 비활성화
+- ✅ 정렬 변경 시 자동 재검색
+- ✅ 24개 단위 테스트 추가
+- ✅ 프로덕션 빌드 성공
+
+**학습 포인트**:
+1. **MUI Select 테스트**: `toHaveValue()` 대신 `getByText()` 사용
+2. **Best Match 특수 처리**: order 파라미터 없이 관련성 순 정렬
+3. **Order 토글 UX**: IconButton + 아이콘으로 직관적 표현
+4. **TypeScript Payload**: 단일 값 → 객체로 변경 시 기존 테스트 수정 필요
+5. **자동 재검색**: 정렬 변경 시 즉시 handleSearch() 호출
+
