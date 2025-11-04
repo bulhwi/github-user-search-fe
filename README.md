@@ -812,14 +812,29 @@ pnpm install
 
 ### 4. Cypress 테스트 실패
 
-**증상**: E2E 테스트가 실패함
+**증상 1**: Cypress executable not found
+```
+No version of Cypress is installed in: ~/Library/Caches/Cypress/13.17.0/Cypress.app
+Please reinstall Cypress by running: cypress install
+```
+
+**해결 방법**:
+```bash
+# Cypress 바이너리 설치 (최초 1회)
+npx cypress install
+
+# 설치 확인
+npx cypress verify
+```
+
+**증상 2**: E2E 테스트가 실행되지 않음
 
 **해결 방법**:
 ```bash
 # 개발 서버가 실행 중인지 확인
 pnpm dev
 
-# Cypress 캐시 삭제
+# Cypress 캐시 삭제 후 재설치
 npx cypress cache clear
 npx cypress install
 ```
