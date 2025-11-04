@@ -36,9 +36,10 @@ export function useSearch() {
   // 다음 페이지 로드 (무한 스크롤용 - Future)
   const loadMore = useCallback(() => {
     if (pagination.hasMore && loading !== 'loading') {
-      dispatch(searchUsers({ query, page: pagination.page + 1 }))
+      // query는 state에서 자동으로 가져옴
+      dispatch(searchUsers({ page: pagination.page + 1 }))
     }
-  }, [dispatch, query, pagination.page, pagination.hasMore, loading])
+  }, [dispatch, pagination.page, pagination.hasMore, loading])
 
   return {
     query,

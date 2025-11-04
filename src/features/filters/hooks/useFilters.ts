@@ -12,25 +12,25 @@ import type { AccountType, SearchInField, RangeFilter, DateRangeFilter } from '@
  */
 export function useFilters() {
   const dispatch = useAppDispatch()
-  const { filters, query } = useAppSelector((state) => state.search)
+  const { filters } = useAppSelector((state) => state.search)
 
   // 타입 필터 변경 (Feature #1)
   const setType = useCallback(
     (type: AccountType | null) => {
       dispatch(setFilters({ type }))
-      // 필터 변경 시 첫 페이지부터 재검색
-      dispatch(searchUsers({ query, page: 1 }))
+      // 필터 변경 시 첫 페이지부터 재검색 (query는 state에서 자동으로 가져옴)
+      dispatch(searchUsers({ page: 1 }))
     },
-    [dispatch, query]
+    [dispatch]
   )
 
   // 검색 필드 필터 변경 (Feature #2)
   const setSearchIn = useCallback(
     (searchIn: SearchInField[]) => {
       dispatch(setFilters({ searchIn }))
-      dispatch(searchUsers({ query, page: 1 }))
+      dispatch(searchUsers({ page: 1 }))
     },
-    [dispatch, query]
+    [dispatch]
   )
 
   // 위치 필터 변경 (Feature #4) - Debounced
@@ -44,10 +44,10 @@ export function useFilters() {
         clearTimeout(locationTimeoutRef.current)
       }
       locationTimeoutRef.current = setTimeout(() => {
-        dispatch(searchUsers({ query, page: 1 }))
+        dispatch(searchUsers({ page: 1 }))
       }, 500)
     },
-    [dispatch, query]
+    [dispatch]
   )
 
   // Cleanup timeout on unmount
@@ -63,45 +63,45 @@ export function useFilters() {
   const setLanguage = useCallback(
     (language: string) => {
       dispatch(setFilters({ language }))
-      dispatch(searchUsers({ query, page: 1 }))
+      dispatch(searchUsers({ page: 1 }))
     },
-    [dispatch, query]
+    [dispatch]
   )
 
   // 리포지토리 수 필터 변경 (Feature #3)
   const setRepos = useCallback(
     (repos: RangeFilter) => {
       dispatch(setFilters({ repos }))
-      dispatch(searchUsers({ query, page: 1 }))
+      dispatch(searchUsers({ page: 1 }))
     },
-    [dispatch, query]
+    [dispatch]
   )
 
   // 계정 생성일 필터 변경 (Feature #6)
   const setCreated = useCallback(
     (created: DateRangeFilter) => {
       dispatch(setFilters({ created }))
-      dispatch(searchUsers({ query, page: 1 }))
+      dispatch(searchUsers({ page: 1 }))
     },
-    [dispatch, query]
+    [dispatch]
   )
 
   // 팔로워 수 필터 변경 (Feature #7)
   const setFollowers = useCallback(
     (followers: RangeFilter) => {
       dispatch(setFilters({ followers }))
-      dispatch(searchUsers({ query, page: 1 }))
+      dispatch(searchUsers({ page: 1 }))
     },
-    [dispatch, query]
+    [dispatch]
   )
 
   // 후원 가능 여부 필터 변경 (Feature #8)
   const setSponsorable = useCallback(
     (sponsorable: boolean) => {
       dispatch(setFilters({ sponsorable }))
-      dispatch(searchUsers({ query, page: 1 }))
+      dispatch(searchUsers({ page: 1 }))
     },
-    [dispatch, query]
+    [dispatch]
   )
 
   return {

@@ -49,12 +49,14 @@ const initialState: SearchState = {
 export const searchUsers = createAsyncThunk(
   'search/searchUsers',
   async (
-    params: { query: string; page?: number },
+    params: { query?: string; page?: number },
     { getState, rejectWithValue, dispatch }
   ) => {
     try {
       const state = getState() as { search: SearchState }
-      const queryString = buildSearchQuery(params.query, state.search.filters)
+      // Use query from params if provided, otherwise use query from state
+      const baseQuery = params.query ?? state.search.query
+      const queryString = buildSearchQuery(baseQuery, state.search.filters)
 
       const response = await githubApi.searchUsers({
         query: queryString,
