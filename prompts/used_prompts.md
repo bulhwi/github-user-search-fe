@@ -3918,3 +3918,230 @@ Canvas API만으로도:
 - 과도한 최적화보다 실용적 선택이 중요
 
 ---
+
+---
+
+## 날짜: 2025-11-05
+
+### 프롬프트 20: Feature #13 - Rate Limit 처리 및 UI 표시
+**사용한 도구**: Claude Code
+
+**프롬프트**:
+```
+[Feature] Rate Limit 처리 및 UI 표시 #13 진행해보자
+```
+
+**작업 내용**:
+
+#### 1. 요구사항 분석
+Issue #13을 읽고 구현 범위 파악:
+- Rate Limit 헤더 파싱 (X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset)
+- Exponential Backoff 재시도 로직
+- Redux 상태 관리 (uiSlice 활용)
+- RateLimitIndicator 컴포넌트
+- Toast 알림
+
+#### 2. Rate Limit 유틸리티 구현 (TDD)
+**파일**: `src/shared/utils/rateLimit.ts` (210 lines)
+- `isRateLimitError()`: HTTP 429 또는 "rate limit" 메시지 감지
+- `getResetDelay()`: Reset 시간까지 남은 밀리초 계산
+- `calculateBackoffDelay()`: Exponential Backoff 지연 시간 (1초 → 2초 → 4초)
+- `sleep()`: Promise 기반 지연 실행
+- `retryWithBackoff()`: 재시도 래퍼 (최대 3회)
+- `formatRateLimitMessage()`: 사용자 친화적 메시지
+- `getRateLimitStatus()`: 상태 판단 (ok/warning/critical/exceeded)
+- `formatResetTime()`: Reset 시간 포맷 (예: "2m 30s")
+
+**테스트**: `src/shared/utils/rateLimit.test.ts` (26 tests)
+- Exponential Backoff 계산 검증
+- 재시도 로직 검증 (Rate Limit 에러만 재시도)
+- 상태 판단 로직 검증
+- 시간 포맷팅 검증
+
+#### 3. GitHub API Client 업데이트
+**파일**: `src/shared/api/github.ts`
+```typescript
+// Rate Limit 자동 재시도 래핑
+const response = await retryWithBackoff(
+  () => httpClient.get<SearchUsersResponse>(`/api/search?${searchParams.toString()}`),
+  {
+    maxRetries: 3,
+    baseDelay: 1000,
+    onRetry: (attempt, delay, error) => {
+      console.log(`[GitHubApiClient] Rate limit retry ${attempt}/3 after ${delay}ms:`, error.message)
+    },
+  }
+)
+```
+
+**테스트 수정**: `src/shared/api/github.test.ts`
+- 404 에러는 즉시 실패 (재시도 없음)
+- Rate Limit 에러는 4회 호출 (초기 + 3회 재시도)
+- 10초 타임아웃 설정 (1000 + 2000 + 4000 = 7000ms)
+
+#### 4. SearchSlice 업데이트
+**파일**: `src/store/slices/searchSlice.ts`
+```typescript
+// Rate Limit 정보를 Redux에 저장
+if (response.rateLimit) {
+  const { setRateLimit, addToast } = await import('../slices/uiSlice')
+  const { getRateLimitStatus } = await import('@/shared/utils/rateLimit')
+
+  dispatch(setRateLimit(response.rateLimit))
+
+  // Toast 알림
+  const status = getRateLimitStatus(response.rateLimit)
+  
+  if (status === 'exceeded') {
+    dispatch(addToast({ message: 'Rate limit exceeded. Please wait for reset.', severity: 'error' }))
+  } else if (status === 'critical') {
+    dispatch(addToast({ message: `Only ${response.rateLimit.remaining} API requests remaining!`, severity: 'warning' }))
+  }
+}
+```
+
+#### 5. RateLimitIndicator 컴포넌트 (TDD)
+**테스트**: `src/shared/components/RateLimitIndicator.test.tsx` (19 tests)
+- 렌더링: Rate Limit 정보, 비율, Progress Bar
+- 상태별 표시: ok (초록), warning (노랑), critical (주황), exceeded (빨강)
+- 카운트다운: Reset 시간 실시간 업데이트
+- 접근성: aria-label, role="alert"
+- Edge Cases: limit=0, reset 과거 시간, remaining > limit
+
+**컴포넌트**: `src/shared/components/RateLimitIndicator.tsx` (118 lines)
+```tsx
+export function RateLimitIndicator({ rateLimit, className = '' }: RateLimitIndicatorProps) {
+  const [resetTimeLeft, setResetTimeLeft] = useState<string>('')
+
+  // useEffect를 early return 전에 호출 (React Hooks 규칙)
+  useEffect(() => {
+    if (!rateLimit) return
+    
+    const updateResetTime = () => {
+      setResetTimeLeft(formatResetTime(rateLimit.reset))
+    }
+
+    updateResetTime()
+    const interval = setInterval(updateResetTime, 1000)
+    return () => clearInterval(interval)
+  }, [rateLimit])
+
+  if (!rateLimit || rateLimit.limit === 0) {
+    return null
+  }
+
+  const percentage = Math.min(Math.round((remaining / limit) * 100), 100)
+  const status = getRateLimitStatus(rateLimit)
+  const progressColor = status === 'ok' ? 'success' : status === 'warning' ? 'warning' : 'error'
+
+  return (
+    <Box>
+      {status === 'exceeded' && <Alert severity="error">Rate limit exceeded. Resets in {resetTimeLeft}</Alert>}
+      {status === 'critical' && <Alert severity="warning">Critical: Only {remaining} requests remaining</Alert>}
+      
+      <Typography variant="body2">
+        <strong>{remaining} / {limit}</strong> requests remaining ({percentage}%)
+      </Typography>
+      
+      <LinearProgress variant="determinate" value={percentage} color={progressColor} />
+    </Box>
+  )
+}
+```
+
+#### 6. UI 통합
+**파일**: `src/app/page.tsx`
+```tsx
+import { RateLimitIndicator } from '@/shared/components/RateLimitIndicator'
+import { useAppSelector } from '@/store/hooks'
+
+export default function Home() {
+  const rateLimit = useAppSelector((state) => state.ui.rateLimit)
+
+  return (
+    <Container maxWidth="xl" className="py-8">
+      {/* Rate Limit Indicator (Feature #13) */}
+      {rateLimit && (
+        <Box sx={{ mb: 3, display: 'flex', justifyContent: 'flex-end' }}>
+          <RateLimitIndicator rateLimit={rateLimit} />
+        </Box>
+      )}
+      
+      <Typography variant="h3">GitHub User Search</Typography>
+      {/* ... */}
+    </Container>
+  )
+}
+```
+
+#### 7. React Hooks 에러 수정
+**문제**: `useEffect`가 early return 후에 호출됨
+```
+Error: React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render.
+```
+
+**해결**:
+```tsx
+// Before (잘못됨)
+export function RateLimitIndicator({ rateLimit }) {
+  const [resetTimeLeft, setResetTimeLeft] = useState<string>('')
+  
+  if (!rateLimit) return null // early return
+  
+  useEffect(() => { /* ... */ }, [rateLimit]) // ❌ Hook after return
+}
+
+// After (올바름)
+export function RateLimitIndicator({ rateLimit }) {
+  const [resetTimeLeft, setResetTimeLeft] = useState<string>('')
+  
+  useEffect(() => {
+    if (!rateLimit) return // ✅ Hook before early return
+    /* ... */
+  }, [rateLimit])
+  
+  if (!rateLimit) return null
+}
+```
+
+#### 8. 테스트 및 빌드
+```bash
+# 단위 테스트: 378 tests passed (+46)
+pnpm test
+
+# rateLimit utils: 26 tests
+# RateLimitIndicator: 19 tests  
+# github API (retry): 1 test
+
+# 프로덕션 빌드: 254 kB (+7 kB)
+pnpm build
+```
+
+**파일 크기 변화**:
+- Before: 247 kB First Load JS
+- After: 254 kB First Load JS (+7 kB)
+
+#### 9. 커밋 및 문서화
+```bash
+git add .
+git commit -m "feat: implement Rate Limit handling and UI display (Feature #13)"
+git push
+
+gh issue close 13 --comment "✅ Feature #13 구현 완료"
+```
+
+**결과물**:
+- ✅ Rate Limit 재시도 로직 (Exponential Backoff)
+- ✅ Redux 상태 관리 통합
+- ✅ RateLimitIndicator 컴포넌트
+- ✅ Toast 알림 (Critical/Exceeded 상태)
+- ✅ 46개 단위 테스트 추가
+- ✅ 프로덕션 빌드 성공
+
+**학습 포인트**:
+1. **React Hooks 규칙**: Hooks는 항상 컴포넌트 최상위에서 호출해야 함 (조건문/반복문/중첩 함수 내부 X)
+2. **Exponential Backoff**: 재시도 간격을 지수적으로 증가 (1초 → 2초 → 4초)
+3. **Rate Limit 정책**: GitHub Search API는 인증 시 30 requests/minute
+4. **TDD 워크플로우**: 테스트 작성 → 컴포넌트 구현 → 테스트 통과 → 리팩토링
+5. **Toast vs Alert**: Toast는 일시적 알림, Alert는 지속적 경고
+
